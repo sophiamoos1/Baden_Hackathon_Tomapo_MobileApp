@@ -890,8 +890,8 @@ private struct TraceabilitySection: View {
                 // Traceability Score Header
                 TraceabilityScoreBar(score: trace.traceabilityScore)
 
-                // Timeline – delegiert an TomapoStationTimeline2
-                TomapoStationTimeline2(stations: trace.stations)
+                // Timeline – delegiert an TomapoStationTimelin
+                TomapoStationTimeline(stations: trace.stations)
             }
         }
     }

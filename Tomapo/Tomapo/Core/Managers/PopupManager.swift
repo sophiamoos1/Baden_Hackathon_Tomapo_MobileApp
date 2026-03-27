@@ -6,7 +6,7 @@
 //
 
 
-import SwiftUI
+internal import SwiftUI
 internal import Combine
 
 final class PopupManager: ObservableObject {
