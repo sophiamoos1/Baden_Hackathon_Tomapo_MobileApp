@@ -6,6 +6,11 @@
 	objectVersion = 77;
 	objects = {
 
+/* Begin PBXBuildFile section */
+		D329CB082F76BA1000057437 /* PhosphorSwift in Frameworks */ = {isa = PBXBuildFile; productRef = D329CB072F76BA1000057437 /* PhosphorSwift */; };
+		D329CB0B2F76BA3000057437 /* HTTPClientModule in Frameworks */ = {isa = PBXBuildFile; productRef = D329CB0A2F76BA3000057437 /* HTTPClientModule */; };
+/* End PBXBuildFile section */
+
 /* Begin PBXContainerItemProxy section */
 		D329CAC62F76B4E400057437 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
@@ -52,6 +57,8 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				D329CB082F76BA1000057437 /* PhosphorSwift in Frameworks */,
+				D329CB0B2F76BA3000057437 /* HTTPClientModule in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -112,6 +119,8 @@
 			);
 			name = Tomapo;
 			packageProductDependencies = (
+				D329CB072F76BA1000057437 /* PhosphorSwift */,
+				D329CB0A2F76BA3000057437 /* HTTPClientModule */,
 			);
 			productName = Tomapo;
 			productReference = D329CAB82F76B4E200057437 /* Tomapo.app */;
@@ -195,6 +204,10 @@
 			);
 			mainGroup = D329CAAF2F76B4E200057437;
 			minimizedProjectReferenceProxies = 1;
+			packageReferences = (
+				D329CB062F76BA1000057437 /* XCRemoteSwiftPackageReference "swift" */,
+				D329CB092F76BA3000057437 /* XCRemoteSwiftPackageReference "http-client-module" */,
+			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = D329CAB92F76B4E200057437 /* Products */;
 			projectDirPath = "";
@@ -578,6 +591,38 @@
 			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
+
+/* Begin XCRemoteSwiftPackageReference section */
+		D329CB062F76BA1000057437 /* XCRemoteSwiftPackageReference "swift" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/phosphor-icons/swift";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 2.1.0;
+			};
+		};
+		D329CB092F76BA3000057437 /* XCRemoteSwiftPackageReference "http-client-module" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/swiftui-packages/http-client-module.git";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 1.0.0;
+			};
+		};
+/* End XCRemoteSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		D329CB072F76BA1000057437 /* PhosphorSwift */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = D329CB062F76BA1000057437 /* XCRemoteSwiftPackageReference "swift" */;
+			productName = PhosphorSwift;
+		};
+		D329CB0A2F76BA3000057437 /* HTTPClientModule */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = D329CB092F76BA3000057437 /* XCRemoteSwiftPackageReference "http-client-module" */;
+			productName = HTTPClientModule;
+		};
+/* End XCSwiftPackageProductDependency section */
 	};
 	rootObject = D329CAB02F76B4E200057437 /* Project object */;
 }
