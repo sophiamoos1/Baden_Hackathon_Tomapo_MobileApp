@@ -7,8 +7,8 @@
 
 // MARK: - Carousel Card Datenmodell
 
-import Foundation
-import SwiftUI
+internal import Foundation
+internal import SwiftUI
 
 struct CardItem: Identifiable {
     let id = UUID()

@@ -5,7 +5,7 @@
 //  Created by Sophia Moos on 27.03.2026.
 //
 
-import SwiftUI
+internal import SwiftUI
 
 struct NewsCarousel: View {
 

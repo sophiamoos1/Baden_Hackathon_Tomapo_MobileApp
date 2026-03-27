@@ -5,8 +5,8 @@
 //  Created by Sophia Moos on 27.03.2026.
 //
 
-import SwiftUI
-import PhosphorSwift
+internal import SwiftUI
+internal import PhosphorSwift
 
 // MARK: - Timeline Hauptview
 
@@ -67,7 +67,7 @@ struct TomapoStationRow: View {
                 HStack(spacing: 6) {
                     Text(station.title)
                         .font(.subheadline.weight(.semibold))
-                        .foregroundColor(Color.theme.secondaryText)
+                        .foregroundColor(Color.theme.bodyText)
                         .lineLimit(2)
                     Circle()
                         .fill(stationStatusColor)
@@ -79,7 +79,7 @@ struct TomapoStationRow: View {
                 if let sub = station.subtitle {
                     Text(sub)
                         .font(.caption)
-                        .foregroundColor(Color.theme.secondaryText.opacity(0.65))
+                        .foregroundColor(Color.theme.bodyText.opacity(0.65))
                         .lineLimit(2)
                 }
 
@@ -89,12 +89,12 @@ struct TomapoStationRow: View {
                         Label(start.formatted(.dateTime.day().month(.abbreviated).year()),
                               systemImage: "calendar")
                             .font(.caption2)
-                            .foregroundColor(Color.theme.secondaryText.opacity(0.45))
+                            .foregroundColor(Color.theme.bodyText.opacity(0.45))
                     }
                     if let dur = station.durationHours {
                         Label(formatDuration(dur), systemImage: "clock")
                             .font(.caption2)
-                            .foregroundColor(Color.theme.secondaryText.opacity(0.45))
+                            .foregroundColor(Color.theme.bodyText.opacity(0.45))
                     }
                 }
 
@@ -109,7 +109,7 @@ struct TomapoStationRow: View {
                             .font(.caption2)
                             .lineLimit(1)
                     }
-                    .foregroundColor(Color.theme.secondaryText.opacity(0.45))
+                    .foregroundColor(Color.theme.bodyText.opacity(0.45))
                 }
 
                 // CO₂
@@ -120,7 +120,7 @@ struct TomapoStationRow: View {
                             .foregroundColor(.green.opacity(0.7))
                         Text("\(String(format: "%.3f", co2)) kg CO₂/kg")
                             .font(.caption2)
-                            .foregroundColor(Color.theme.secondaryText.opacity(0.45))
+                            .foregroundColor(Color.theme.bodyText.opacity(0.45))
                     }
                 }
 
@@ -146,7 +146,7 @@ struct TomapoStationRow: View {
                 if let notes = station.notes {
                     Text(notes)
                         .font(.caption2)
-                        .foregroundColor(Color.theme.secondaryText.opacity(0.45))
+                        .foregroundColor(Color.theme.bodyText.opacity(0.45))
                         .lineLimit(2)
                         .padding(.top, 1)
                 }
@@ -160,7 +160,7 @@ struct TomapoStationRow: View {
             } label: {
                 Ph.magnifyingGlass.duotone
                     .frame(width: 22, height: 22)
-                    .foregroundColor(Color.theme.secondaryText.opacity(0.3))
+                    .foregroundColor(Color.theme.bodyText.opacity(0.3))
             }
             .padding(.top, 6)
             .fullScreenCover(isPresented: $navigateToDetail) {

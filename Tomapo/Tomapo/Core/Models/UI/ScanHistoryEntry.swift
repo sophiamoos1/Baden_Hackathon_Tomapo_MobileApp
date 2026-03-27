@@ -7,7 +7,7 @@
 
 // TODO: Anpassen wenn wir gemergtes Datenmodell haben
 
-import Foundation
+internal import Foundation
 
 // MARK: - ProductStatus
 

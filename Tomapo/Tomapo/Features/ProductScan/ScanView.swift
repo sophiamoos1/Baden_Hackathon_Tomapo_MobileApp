@@ -5,18 +5,18 @@
 //  Created by Sophia Moos on 27.03.2026.
 //
 
-import SwiftUI
+internal import SwiftUI
  
 struct ScanView: View {
     @Binding var selectedTab: BottomBarSelectedTab
     @EnvironmentObject var themeManager: ThemeManager
-   // @EnvironmentObject private var historyStore: ScanHistoryStore
+    @EnvironmentObject private var historyStore: ScanHistoryStore
     @StateObject private var viewModel = ScannerViewModel()
  
     var body: some View {
         ZStack {
             // Deckt das globale Hintergrundbild der ContentView ab
-            Color.theme.oatMilk.ignoresSafeArea()
+            Color.theme.baseBg.ignoresSafeArea()
  
             // MARK: - Kamera oder Fallback
             switch viewModel.permissionState {
@@ -50,9 +50,10 @@ struct ScanView: View {
         // MARK: - Bottom Sheet bei erkanntem Code
         .sheet(isPresented: $viewModel.showSheet, onDismiss: {
             viewModel.scanResult = nil
+            viewModel.resumeScanning()
         }) {
             if let result = viewModel.scanResult {
-                ScanResultSheetView2(result: result)
+                ScanResultSheetView(result: result)
                     // EnvironmentObjects werden von Sheets nicht automatisch
                     // geerbt – müssen explizit weitergegeben werden.
                     // https://developer.apple.com/documentation/swiftui/view/sheet
@@ -60,7 +61,7 @@ struct ScanView: View {
                     .presentationDetents([.large])
                     .presentationDragIndicator(.visible)
                     .presentationCornerRadius(24)
-                    .presentationBackground(Color.theme.background)
+                    .presentationBackground(Color.theme.popoverBg)
             }
         }
     }
@@ -122,13 +123,13 @@ struct CameraPermissionDeniedView: View {
         VStack(spacing: 16) {
             Image(systemName: "camera.fill")
                 .font(.system(size: 48))
-                .foregroundColor(Color.theme.secondaryText)
+                .foregroundColor(Color.theme.baseFg)
             Text("Kamerazugriff verweigert")
                 .font(.headline)
-                .foregroundColor(Color.theme.secondaryText)
+                .foregroundColor(Color.theme.baseFg)
             Text("Bitte erlaube den Kamerazugriff in den Einstellungen um QR-Codes scannen zu können.")
                 .font(.subheadline)
-                .foregroundColor(Color.theme.secondaryText.opacity(0.7))
+                .foregroundColor(Color.theme.baseFg.opacity(0.7))
                 .multilineTextAlignment(.center)
                 .padding(.horizontal, 32)
             Button("Einstellungen öffnen") {
@@ -137,11 +138,11 @@ struct CameraPermissionDeniedView: View {
                 }
             }
             .buttonStyle(.bordered)
-            .tint(Color.theme.secondaryText)
+            .tint(Color.theme.baseFg)
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
         // Deckt das globale Hintergrundbild vollständig ab
-        .background(Color.theme.oatMilk.ignoresSafeArea())
+        .background(Color.theme.baseBg.ignoresSafeArea())
     }
 }
  

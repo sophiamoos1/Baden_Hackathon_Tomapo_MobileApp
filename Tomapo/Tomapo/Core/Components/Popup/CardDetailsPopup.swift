@@ -5,8 +5,8 @@
 //  Created by Sophia Moos on 27.03.2026.
 //
 
-import SwiftUI
-import PhosphorSwift
+internal import SwiftUI
+internal import PhosphorSwift
  
 struct CardDetailsPopup: View {
     let item: CardItem
@@ -30,11 +30,11 @@ struct CardDetailsPopup: View {
                     Button(action: onClose) {
                         ZStack {
                             Circle()
-                                .fill(Color.theme.bottomBarBackground)
+                                .fill(Color.theme.oatMilk)
                                 .frame(width: 36, height: 36)
                             Ph.arrowsIn.duotone
                                 .frame(width: 18, height: 18)
-                                .foregroundStyle(Color.theme.secondaryText)
+                                .foregroundStyle(Color.theme.bodyText)
                         }
                     }
                 }

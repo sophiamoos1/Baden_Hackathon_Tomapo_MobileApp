@@ -5,8 +5,8 @@
 //  Created by Sophia Moos on 27.03.2026.
 //
 
-import SwiftUI
-import PhosphorSwift
+internal import SwiftUI
+internal import PhosphorSwift
 
 // MARK: - Card
  
