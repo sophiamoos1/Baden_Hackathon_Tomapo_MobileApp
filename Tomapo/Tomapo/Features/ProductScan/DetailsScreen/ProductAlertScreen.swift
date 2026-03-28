@@ -38,37 +38,33 @@ struct ProductAlertsScreen: View {
         ZStack(alignment: .top) {
             Color.theme.baseBg.ignoresSafeArea()
 
-            VStack(spacing: 0) {
-                Color.clear.frame(height: 60 + 60) // BackBar + Filter
+            ScrollView(showsIndicators: false) {
+                VStack(alignment: .leading, spacing: 16) {
 
-                ScrollView(showsIndicators: false) {
-                    VStack(alignment: .leading, spacing: 16) {
+                    // Neue Meldung Button
+                    newAlertButton.padding(.horizontal, 16)
 
-                        // Neue Meldung Button
-                        newAlertButton.padding(.horizontal, 16)
-
-                        if product.alerts.isEmpty {
-                            emptyState
+                    if product.alerts.isEmpty {
+                        emptyState
+                    } else {
+                        if filteredAlerts.isEmpty {
+                            VStack(spacing: 8) {
+                                Image(systemName: "line.3.horizontal.decrease").font(.system(size: 32)).foregroundColor(Color.theme.mutedFg.opacity(0.25))
+                                Text("No alerts in this category").font(.subheadline).foregroundColor(Color.theme.mutedFg)
+                            }
+                            .frame(maxWidth: .infinity).padding(.top, 40)
                         } else {
-                            if filteredAlerts.isEmpty {
-                                VStack(spacing: 8) {
-                                    Image(systemName: "line.3.horizontal.decrease").font(.system(size: 32)).foregroundColor(Color.theme.mutedFg.opacity(0.25))
-                                    Text("No alerts in this category").font(.subheadline).foregroundColor(Color.theme.mutedFg)
-                                }
-                                .frame(maxWidth: .infinity).padding(.top, 40)
-                            } else {
-                                ForEach(filteredAlerts) { alert in
-                                    AlertCard(alert: alert).padding(.horizontal, 16)
-                                }
+                            ForEach(filteredAlerts) { alert in
+                                AlertCard(alert: alert).padding(.horizontal, 16)
                             }
                         }
-                        Spacer(minLength: 40)
                     }
-                    .padding(.top, 16).padding(.bottom, 32)
+                    Spacer(minLength: 40)
                 }
+                .padding(.top, 16).padding(.bottom, 32)
             }
-
-            // BackBar + Filter (fixiert oben)
+        }
+        .safeAreaInset(edge: .top, spacing: 0) {
             VStack(spacing: 0) {
                 BackNavigationBar(title: "Alerts", onBack: onBack)
                 filterBar

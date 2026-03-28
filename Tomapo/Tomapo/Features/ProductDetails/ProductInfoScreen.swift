@@ -16,7 +16,6 @@ struct ProductInfoScreen: View {
             Color.theme.baseBg.ignoresSafeArea()
             ScrollView(showsIndicators: false) {
                 VStack(alignment: .leading, spacing: 20) {
-                    Color.clear.frame(height: 60)
                     EnvironmentSection(env: product.environmentSummary, certs: product.certifications).padding(.horizontal, 16)
                     if !product.certifications.isEmpty {
                         CertificationsDetailSection(certifications: product.certifications).padding(.horizontal, 16)

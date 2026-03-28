@@ -16,8 +16,6 @@ struct ProductIngredientsScreen: View {
             Color.theme.baseBg.ignoresSafeArea()
             ScrollView(showsIndicators: false) {
                 VStack(alignment: .leading, spacing: 20) {
-                    Color.clear.frame(height: 60)
- 
                     // Diät + Badges
                     DietSummarySection(product: product).padding(.horizontal, 16)
  
@@ -311,8 +309,6 @@ struct SubProductDetailScreen: View {
             Color.theme.baseBg.ignoresSafeArea()
             ScrollView(showsIndicators: false) {
                 VStack(alignment: .leading, spacing: 20) {
-                    Color.clear.frame(height: 60)
- 
                     // Hero
                     subProductHero.padding(.horizontal, 16)
  

@@ -62,6 +62,79 @@ final class ScanHistoryStore: ObservableObject {
         save()
     }
 
+    /// Adds a server entry preserving the original timestamp. Skips if barcode already exists locally.
+    func addFromServer(_ serverEntry: ServerScanEntry) {
+        let existsLocally = entries.contains { $0.barcode == serverEntry.barcode }
+        if existsLocally { return }
+
+        let status: ProductStatus
+        switch serverEntry.productStatus {
+        case "recall_active", "recalled": status = .recallActive
+        case "mhd_expired":               status = .mhdExpired
+        case "mhd_soon_expiring":         status = .mhdSoonExpiring
+        case "ok":                         status = .ok
+        default:                           status = .unknown
+        }
+
+        let entry = ScanHistoryEntry(
+            barcode: serverEntry.barcode,
+            barcodeType: serverEntry.barcodeType ?? "EAN13",
+            productName: serverEntry.productName,
+            brand: serverEntry.brand,
+            nutriscoreGrade: serverEntry.nutriscoreGrade,
+            ecoscoreGrade: serverEntry.ecoscoreGrade,
+            co2KgPerKg: serverEntry.co2KgPerKg,
+            productStatus: status,
+            scannedAt: serverEntry.createdAt ?? Date()
+        )
+        entries.append(entry)
+    }
+
+    /// Replaces the entire local history with server data and persists.
+    func replaceWithServerEntries(_ serverEntries: [ServerScanEntry]) {
+        var newEntries: [ScanHistoryEntry] = []
+        for serverEntry in serverEntries {
+            let status: ProductStatus
+            switch serverEntry.productStatus {
+            case "recall_active", "recalled": status = .recallActive
+            case "mhd_expired":               status = .mhdExpired
+            case "mhd_soon_expiring":         status = .mhdSoonExpiring
+            case "ok":                         status = .ok
+            default:                           status = .unknown
+            }
+            newEntries.append(ScanHistoryEntry(
+                barcode: serverEntry.barcode,
+                barcodeType: serverEntry.barcodeType ?? "EAN13",
+                productName: serverEntry.productName,
+                brand: serverEntry.brand,
+                nutriscoreGrade: serverEntry.nutriscoreGrade,
+                ecoscoreGrade: serverEntry.ecoscoreGrade,
+                co2KgPerKg: serverEntry.co2KgPerKg,
+                productStatus: status,
+                scannedAt: serverEntry.createdAt ?? Date()
+            ))
+        }
+        // Sort newest first
+        entries = newEntries.sorted { $0.scannedAt > $1.scannedAt }
+        save()
+    }
+
+    /// Merges server entries into local store, adding missing ones and preserving timestamps.
+    func mergeServerEntries(_ serverEntries: [ServerScanEntry]) {
+        var didChange = false
+        for serverEntry in serverEntries {
+            let existsLocally = entries.contains { $0.barcode == serverEntry.barcode }
+            if !existsLocally {
+                addFromServer(serverEntry)
+                didChange = true
+            }
+        }
+        if didChange {
+            entries.sort { $0.scannedAt > $1.scannedAt }
+            save()
+        }
+    }
+
     // MARK: - Update (nach Produktdetail API-Call)
 
     /// Aktualisiert gecachte Daten eines Eintrags nach einem frischen API-Call.

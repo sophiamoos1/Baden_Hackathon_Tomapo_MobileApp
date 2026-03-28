@@ -47,8 +47,6 @@ struct ProductDetailView: View {
     private func productContent(_ product: TomapoResponse) -> some View {
         ScrollView(showsIndicators: false) {
             VStack(alignment: .leading, spacing: 0) {
-                Color.clear.frame(height: 60)
- 
                 // Hero
                 ProductDetailHero(product: product).padding(.bottom, 8)
  
@@ -99,7 +97,6 @@ struct ProductDetailView: View {
  
     private var loadingView: some View {
         VStack(spacing: 20) {
-            Color.clear.frame(height: 60)
             ProgressView().scaleEffect(1.3).tint(Color.theme.accentFg)
             Text("Loading product data…")
                 .font(.subheadline).foregroundColor(Color.theme.mutedFg)
@@ -109,7 +106,6 @@ struct ProductDetailView: View {
  
     private var notFoundView: some View {
         VStack(spacing: 16) {
-            Color.clear.frame(height: 60)
             Image(systemName: "magnifyingglass")
                 .font(.system(size: 44)).foregroundColor(Color.theme.mutedFg.opacity(0.35))
             Text("Product not found").font(.headline).foregroundColor(Color.theme.cardFg)
@@ -119,7 +115,6 @@ struct ProductDetailView: View {
  
     private func errorView(_ error: TomapoApiError) -> some View {
         VStack(spacing: 12) {
-            Color.clear.frame(height: 60)
             Image(systemName: "wifi.slash").font(.system(size: 40)).foregroundColor(Color.theme.mutedFg.opacity(0.5))
             Text("Loading Error").font(.headline).foregroundColor(Color.theme.cardFg)
             Text(error.localizedDescription ?? "Unknown error")

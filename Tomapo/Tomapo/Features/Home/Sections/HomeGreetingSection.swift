@@ -13,22 +13,29 @@ struct HomeGreetingSection: View {
  
     var body: some View {
         VStack(alignment: .leading, spacing: 8) {
- 
-            // MARK: Begrüssungstitel
-            Text("Welcome back, \(username)!")
-                .font(.largeTitle)
-                .fontWeight(.heavy)
-                .foregroundColor(Color.theme.cardFg)
+
+            // MARK: Greeting + Illustration
+            HStack(alignment: .center, spacing: 8) {
+                VStack(alignment: .leading, spacing: 4) {
+                    Text("Welcome back, \(username)!")
+                        .font(.title2)
+                        .fontWeight(.bold)
+                        .foregroundColor(Color.theme.cardFg)
+                        .lineLimit(2)
+
+                    Text("wanna see what's new?")
+                        .font(.subheadline)
+                        .foregroundColor(Color.theme.mutedFg)
+                }
                 .frame(maxWidth: .infinity, alignment: .leading)
-                .padding(.horizontal, 20)
- 
-            // MARK: Subtitle
-            Text("wanna see what's new?")
-                .font(.body)
-                .foregroundColor(Color.theme.cardFg)
-                .frame(maxWidth: .infinity, alignment: .leading)
-                .padding(.horizontal, 20)
- 
+
+                Image("IllustrationScan")
+                    .resizable()
+                    .scaledToFit()
+                    .frame(width: 76, height: 76)
+            }
+            .padding(.horizontal, 20)
+
             // MARK: News Carousel
             NewsCarousel()
                 .padding(.top, 4)

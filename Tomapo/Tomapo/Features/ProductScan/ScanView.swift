@@ -173,7 +173,7 @@ struct ScanView: View {
             } label: {
                 Text("Confirm")
                     .font(.system(size: 12, weight: .medium))
-                    .foregroundColor(Color.theme.baseFg)
+                    .foregroundColor(Color.theme.warmPearl)
                     .padding(.horizontal, 14)
                     .padding(.vertical, 8)
                     .background(

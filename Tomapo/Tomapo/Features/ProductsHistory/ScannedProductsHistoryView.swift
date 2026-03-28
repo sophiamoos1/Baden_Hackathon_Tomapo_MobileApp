@@ -94,23 +94,23 @@ struct ScannedProductsHistoryView: View {
         defer { isSyncing = false }
         do {
             let serverEntries = try await TomapoAPIService.shared.getMyScanHistory()
-            // Add server entries not found locally
-            for serverEntry in serverEntries {
-                let existsLocally = historyStore.entries.contains { $0.barcode == serverEntry.barcode }
-                if !existsLocally {
-                    historyStore.add(
-                        barcode: serverEntry.barcode,
-                        barcodeType: serverEntry.barcodeType ?? "EAN13",
-                        productName: serverEntry.productName,
-                        brand: serverEntry.brand,
-                        nutriscoreGrade: serverEntry.nutriscoreGrade,
-                        ecoscoreGrade: serverEntry.ecoscoreGrade,
-                        co2KgPerKg: serverEntry.co2KgPerKg
-                    )
-                }
+
+            if historyStore.entries.isEmpty {
+                // First load or after clear: use server as source of truth
+                historyStore.replaceWithServerEntries(serverEntries)
+            } else {
+                // Merge: add server entries missing locally (preserves timestamps)
+                historyStore.mergeServerEntries(serverEntries)
             }
         } catch {
             // Silent — local store is the fallback
+        }
+    }
+
+    private func clearAllWithServer() {
+        withAnimation { historyStore.clearAll() }
+        Task {
+            try? await TomapoAPIService.shared.clearMyScanHistory()
         }
     }
 
@@ -133,7 +133,7 @@ struct ScannedProductsHistoryView: View {
             Spacer()
             if !historyStore.entries.isEmpty {
                 Button {
-                    withAnimation { historyStore.clearAll() }
+                    clearAllWithServer()
                 } label: {
                     Text("Clear All")
                         .font(.caption).foregroundColor(Color.theme.mutedFg)

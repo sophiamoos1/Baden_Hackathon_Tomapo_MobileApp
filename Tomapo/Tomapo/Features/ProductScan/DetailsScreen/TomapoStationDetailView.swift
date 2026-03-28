@@ -19,7 +19,6 @@
  Color.theme.baseBg.ignoresSafeArea()
  ScrollView(showsIndicators: false) {
  VStack(alignment: .leading, spacing: 20) {
- Color.clear.frame(height: 60) // Platz für BackBar
  stationHero
  stationMeta
  stationDetailSection

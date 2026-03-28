@@ -294,8 +294,6 @@ struct MessageDetailView: View {
             Color.theme.baseBg.ignoresSafeArea()
             ScrollView(showsIndicators: false) {
                 VStack(alignment: .leading, spacing: 20) {
-                    Color.clear.frame(height: 60)
-
                     // Alert Header
                     alertHeader.padding(.horizontal, 16)
 

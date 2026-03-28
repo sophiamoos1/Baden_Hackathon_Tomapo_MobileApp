@@ -23,7 +23,7 @@ struct BackNavigationBar: View {
  
                     Ph.arrowFatLeft.duotone
                         .frame(width: 22, height: 22)
-                        .foregroundStyle(Color.theme.mutedBg)
+                        .foregroundStyle(Color.theme.accentBg)
                 }
             }
             Spacer()
