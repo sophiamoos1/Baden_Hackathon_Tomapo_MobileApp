@@ -23,7 +23,7 @@ struct BackNavigationBar: View {
  
                     Ph.arrowFatLeft.duotone
                         .frame(width: 22, height: 22)
-                        .foregroundStyle(Color.theme.softOliveFog)
+                        .foregroundStyle(Color.theme.mutedBg)
                 }
             }
             Spacer()
@@ -31,9 +31,10 @@ struct BackNavigationBar: View {
         .overlay(
             Text(title)
                 .font(.headline)
-                .foregroundColor(Color.theme.bodyText)
+                .foregroundColor(Color.theme.cardFg)
                 .lineLimit(1)
-                .fixedSize(horizontal: true, vertical: false)
+                .truncationMode(.tail)
+                .padding(.horizontal, 56)
         )
         .padding(.horizontal, 16)
         .padding(.vertical, 8)

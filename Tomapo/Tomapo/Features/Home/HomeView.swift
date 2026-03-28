@@ -19,7 +19,7 @@ struct HomeView: View {
                     // MARK: ── Begrüssung + Carousel ───────────────────────
                     HomeGreetingSection()
                         .padding(.top, geo.safeAreaInsets.top + 16)
-                        .background(Color.theme.sandMist)
+                        .background(Color.theme.baseBg)
                         .padding(.bottom, 28)
 
                     // MARK: ── Restlicher Home-Content ─────────────────────

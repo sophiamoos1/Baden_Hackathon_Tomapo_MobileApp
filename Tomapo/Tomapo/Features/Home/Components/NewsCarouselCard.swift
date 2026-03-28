@@ -81,5 +81,5 @@ struct NewsCarouselCard: View {
     ))
     .environmentObject(PopupManager())
     .padding()
-    .background(Color.theme.oatMilk)
+    .background(Color.theme.cardBg)
 }

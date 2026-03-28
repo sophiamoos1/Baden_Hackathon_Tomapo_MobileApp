@@ -54,7 +54,7 @@ struct BottomBar: View {
         .padding(.horizontal, 12)
         .padding(.vertical, 7)
         .background(
-            Color.theme.oatMilk
+            Color.theme.cardBg
                 .cornerRadius(30)
         )
         // Abstand zu den 3 Seiten (links, rechts, unten)

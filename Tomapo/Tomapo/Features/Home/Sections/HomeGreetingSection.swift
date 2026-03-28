@@ -18,14 +18,14 @@ struct HomeGreetingSection: View {
             Text("Welcome back, \(username)!")
                 .font(.largeTitle)
                 .fontWeight(.heavy)
-                .foregroundColor(Color.theme.importantText)
+                .foregroundColor(Color.theme.cardFg)
                 .frame(maxWidth: .infinity, alignment: .leading)
                 .padding(.horizontal, 20)
  
             // MARK: Subtitle
             Text("wanna see what's new?")
                 .font(.body)
-                .foregroundColor(Color.theme.bodyText)
+                .foregroundColor(Color.theme.cardFg)
                 .frame(maxWidth: .infinity, alignment: .leading)
                 .padding(.horizontal, 20)
  
@@ -39,6 +39,6 @@ struct HomeGreetingSection: View {
  
 #Preview {
     HomeGreetingSection()
-        .background(Color.theme.oatMilk)
+        .background(Color.theme.cardBg)
 }
  

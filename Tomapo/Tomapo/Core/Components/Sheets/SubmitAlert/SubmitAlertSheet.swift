@@ -45,9 +45,9 @@ struct SubmitAlertSheet: View {
                         TextField("z.B. Schimmel auf der Verpackung entdeckt", text: $draft.title)
                             .textFieldStyle(.plain)
                             .font(.subheadline)
-                            .foregroundColor(Color.theme.bodyText)
+                            .foregroundColor(Color.theme.cardFg)
                             .padding(12)
-                            .background(Color.theme.oatMilk)
+                            .background(Color.theme.cardBg)
                             .cornerRadius(12)
                     }
                     .padding(.horizontal, 16)
@@ -87,17 +87,17 @@ struct SubmitAlertSheet: View {
                             if draft.body.isEmpty {
                                 Text("z.B. Schimmelflecken auf 3 von 10 Eiern, obwohl MHD noch 5 Tage entfernt. Gekauft am 15.02 bei Netto Basel.")
                                     .font(.subheadline)
-                                    .foregroundColor(Color.theme.bodyText.opacity(0.4))
+                                    .foregroundColor(Color.theme.mutedFg)
                                     .padding(12)
                             }
                             TextEditor(text: $draft.body)
                                 .font(.subheadline)
-                                .foregroundColor(Color.theme.bodyText)
+                                .foregroundColor(Color.theme.cardFg)
                                 .frame(minHeight: 120)
                                 .padding(8)
                                 .scrollContentBackground(.hidden)
                         }
-                        .background(Color.theme.oatMilk)
+                        .background(Color.theme.cardBg)
                         .cornerRadius(12)
                     }
                     .padding(.horizontal, 16)
@@ -113,19 +113,19 @@ struct SubmitAlertSheet: View {
 
                     // Disclaimer
                     Text("Deine Meldung wird geprüft und kann danach für andere User sichtbar werden. Dein Nickname wird angezeigt.")
-                        .font(.caption2).foregroundColor(Color.theme.bodyText.opacity(0.4))
+                        .font(.caption2).foregroundColor(Color.theme.mutedFg)
                         .padding(.horizontal, 16)
 
                     Spacer(minLength: 40)
                 }
             }
-            .background(Color.theme.warmPearl)
+            .background(Color.theme.baseBg)
             .navigationTitle("Meldung erfassen")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .topBarLeading) {
                     Button("Abbrechen") { dismiss() }
-                        .foregroundColor(Color.theme.bodyText.opacity(0.7))
+                        .foregroundColor(Color.theme.mutedFg)
                 }
                 ToolbarItem(placement: .topBarTrailing) {
                     Button {
@@ -138,7 +138,7 @@ struct SubmitAlertSheet: View {
                     } label: {
                         Text("Einreichen")
                             .font(.subheadline.weight(.semibold))
-                            .foregroundColor(Color.theme.accentTerracotta)
+                            .foregroundColor(Color.theme.accentFg)
                     }
                 }
             }
@@ -152,25 +152,25 @@ struct SubmitAlertSheet: View {
     private var productPreview: some View {
         HStack(spacing: 12) {
             ZStack {
-                RoundedRectangle(cornerRadius: 8).fill(Color.theme.oatMilk).frame(width: 44, height: 44)
-                Image(systemName: "cart.fill").font(.system(size: 20)).foregroundColor(Color.theme.bodyText.opacity(0.3))
+                RoundedRectangle(cornerRadius: 8).fill(Color.theme.cardBg).frame(width: 44, height: 44)
+                Image(systemName: "cart.fill").font(.system(size: 20)).foregroundColor(Color.theme.mutedFg.opacity(0.35))
             }
             VStack(alignment: .leading, spacing: 2) {
-                Text(product.productName ?? product.barcode).font(.subheadline.weight(.semibold)).foregroundColor(Color.theme.bodyText).lineLimit(1)
-                if let brand = product.brands { Text(brand).font(.caption).foregroundColor(Color.theme.bodyText.opacity(0.5)) }
-                if let batch = product.batchId { Text("Charge: \(batch)").font(.caption2).foregroundColor(Color.theme.bodyText.opacity(0.4)) }
+                Text(product.productName ?? product.barcode).font(.subheadline.weight(.semibold)).foregroundColor(Color.theme.cardFg).lineLimit(1)
+                if let brand = product.brands { Text(brand).font(.caption).foregroundColor(Color.theme.mutedFg) }
+                if let batch = product.batchId { Text("Charge: \(batch)").font(.caption2).foregroundColor(Color.theme.mutedFg) }
             }
             Spacer()
         }
-        .padding(12).background(Color.theme.oatMilk).cornerRadius(12)
+        .padding(12).background(Color.theme.cardBg).cornerRadius(12)
     }
 
     private func formField<Content: View>(label: String, hint: String?, @ViewBuilder content: () -> Content) -> some View {
         VStack(alignment: .leading, spacing: 8) {
-            Text(label).font(.caption.weight(.semibold)).foregroundColor(Color.theme.bodyText.opacity(0.6))
+            Text(label).font(.caption.weight(.semibold)).foregroundColor(Color.theme.mutedFg)
             content()
             if let h = hint {
-                Text(h).font(.caption2).foregroundColor(Color.theme.bodyText.opacity(0.4))
+                Text(h).font(.caption2).foregroundColor(Color.theme.mutedFg)
             }
         }
     }
@@ -198,9 +198,9 @@ private struct CategoryChip: View {
     var body: some View {
         Button(action: onTap) {
             Text(label).font(.caption.weight(.semibold))
-                .foregroundColor(isSelected ? .white : Color.theme.bodyText)
+                .foregroundColor(isSelected ? .white : Color.theme.cardFg)
                 .padding(.horizontal, 12).padding(.vertical, 7)
-                .background(isSelected ? Color.theme.accentTerracotta : Color.theme.oatMilk)
+                .background(isSelected ? Color.theme.accentFg : Color.theme.cardBg)
                 .cornerRadius(20)
         }
         .buttonStyle(.plain)
@@ -220,8 +220,8 @@ private struct SeverityChip: View {
     }
     private var color: Color {
         switch severity {
-        case .low: return Color.theme.infso; case .medium: return .orange
-        case .high: return Color.theme.warning; case .critical: return Color.theme.error; default: return Color.theme.bodyText.opacity(0.5)
+        case .low: return Color.theme.infso; case .medium: return Color.theme.warning
+        case .high: return Color.theme.warning; case .critical: return Color.theme.error; default: return Color.theme.mutedFg
         }
     }
 

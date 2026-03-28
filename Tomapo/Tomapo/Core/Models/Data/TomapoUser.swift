@@ -24,6 +24,7 @@ struct TomapoUser: Codable, Equatable {
     var email: String
     var nickname: String
     var avatarUrl: String?
+    var passwordHash: String?
 
     /// Lightweight-Summaries aller Meldungen – für Badge + Listenansicht.
     /// Vollständige Meldungen → TomapoUserMessageStore
@@ -37,6 +38,7 @@ struct TomapoUser: Codable, Equatable {
         case id, messages, email, nickname
         case fullName            = "full_name"
         case avatarUrl           = "avatar_url"
+        case passwordHash        = "password_hash"
         case createdAt           = "created_at"
         case updatedAt           = "updated_at"
         case isSyncedWithBackend = "is_synced_with_backend"
@@ -44,12 +46,13 @@ struct TomapoUser: Codable, Equatable {
 
     init(id: String = UUID().uuidString,
          fullName: String, email: String, nickname: String,
-         avatarUrl: String? = nil,
+         avatarUrl: String? = nil, passwordHash: String? = nil,
          messages: [TomapoUserMessageSummary] = [],
          createdAt: Date = Date(), updatedAt: Date = Date(),
          isSyncedWithBackend: Bool = false) {
         self.id = id; self.fullName = fullName; self.email = email
         self.nickname = nickname; self.avatarUrl = avatarUrl
+        self.passwordHash = passwordHash
         self.messages = messages; self.createdAt = createdAt
         self.updatedAt = updatedAt; self.isSyncedWithBackend = isSyncedWithBackend
     }
@@ -137,18 +140,22 @@ final class TomapoUserStore: ObservableObject {
 
     // MARK: User CRUD
 
-    func createUser(fullName: String, email: String, nickname: String) {
-        currentUser = TomapoUser(fullName: fullName, email: email, nickname: nickname)
+    func createUser(fullName: String, email: String, nickname: String,
+                    passwordHash: String? = nil) {
+        currentUser = TomapoUser(fullName: fullName, email: email, nickname: nickname,
+                                  passwordHash: passwordHash)
         save()
     }
 
     func updateUser(fullName: String? = nil, email: String? = nil,
-                    nickname: String? = nil, avatarUrl: String? = nil) {
+                    nickname: String? = nil, avatarUrl: String? = nil,
+                    passwordHash: String? = nil) {
         guard var u = currentUser else { return }
-        if let v = fullName  { u.fullName  = v }
-        if let v = email     { u.email     = v }
-        if let v = nickname  { u.nickname  = v }
-        if let v = avatarUrl { u.avatarUrl = v }
+        if let v = fullName     { u.fullName     = v }
+        if let v = email        { u.email        = v }
+        if let v = nickname     { u.nickname     = v }
+        if let v = avatarUrl    { u.avatarUrl    = v }
+        if let v = passwordHash { u.passwordHash = v }
         u.updatedAt = Date()
         currentUser = u; save()
     }

@@ -30,11 +30,11 @@ struct CardDetailsPopup: View {
                     Button(action: onClose) {
                         ZStack {
                             Circle()
-                                .fill(Color.theme.oatMilk)
+                                .fill(Color.theme.cardBg)
                                 .frame(width: 36, height: 36)
                             Ph.arrowsIn.duotone
                                 .frame(width: 18, height: 18)
-                                .foregroundStyle(Color.theme.bodyText)
+                                .foregroundStyle(Color.theme.cardFg)
                         }
                     }
                 }
@@ -67,14 +67,14 @@ struct CardDetailsPopup: View {
                 Text(item.title)
                     .font(.title3)
                     .fontWeight(.bold)
-                    .foregroundColor(Color.theme.importantText)
+                    .foregroundColor(Color.theme.cardFg)
                     .multilineTextAlignment(.center)
                     .padding(.horizontal, 24)
  
                 // Beschreibung
                 Text(item.subtitle)
                     .font(.body)
-                    .foregroundColor(Color.theme.bodyText)
+                    .foregroundColor(Color.theme.cardFg)
                     .multilineTextAlignment(.center)
                     .lineSpacing(4)
                     .padding(.horizontal, 24)
@@ -82,7 +82,7 @@ struct CardDetailsPopup: View {
                     .padding(.bottom, 28)
             }
             .background(
-                Color.theme.sandMist
+                Color.theme.cardBg
                     .clipShape(RoundedRectangle(cornerRadius: 28))
                     .shadow(color: .black.opacity(0.18), radius: 24, x: 0, y: 8)
             )

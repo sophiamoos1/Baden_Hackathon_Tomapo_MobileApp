@@ -64,10 +64,10 @@ struct MessagesView: View {
         VStack(alignment: .leading, spacing: 4) {
             Text("Meldungen")
                 .font(.largeTitle).fontWeight(.heavy)
-                .foregroundColor(Color.theme.importantText)
+                .foregroundColor(Color.theme.cardFg)
             HStack(spacing: 12) {
                 Text("\(userMessageStore.messages.count) Meldung\(userMessageStore.messages.count == 1 ? "" : "en")")
-                    .font(.subheadline).foregroundColor(Color.theme.bodyText)
+                    .font(.subheadline).foregroundColor(Color.theme.cardFg)
                 let pending = userMessageStore.messages.filter { $0.submissionStatus == .draft }.count
                 if pending > 0 {
                     HStack(spacing: 4) {
@@ -91,9 +91,9 @@ struct MessagesView: View {
                     } label: {
                         Text(f.rawValue)
                             .font(.caption.weight(.semibold))
-                            .foregroundColor(filter == f ? .white : Color.theme.bodyText)
+                            .foregroundColor(filter == f ? .white : Color.theme.cardFg)
                             .padding(.horizontal, 14).padding(.vertical, 7)
-                            .background(filter == f ? Color.theme.infso : Color.theme.oatMilk.opacity(0.85))
+                            .background(filter == f ? Color.theme.infso : Color.theme.cardBg)
                             .cornerRadius(20)
                     }
                     .buttonStyle(.plain)
@@ -120,11 +120,11 @@ struct MessagesView: View {
         VStack(spacing: 16) {
             Image(systemName: "bubble.left.and.exclamationmark.bubble.right")
                 .font(.system(size: 48, weight: .ultraLight))
-                .foregroundColor(Color.theme.bodyText.opacity(0.3))
+                .foregroundColor(Color.theme.mutedFg.opacity(0.35))
             Text("Keine Meldungen")
-                .font(.headline).foregroundColor(Color.theme.importantText)
+                .font(.headline).foregroundColor(Color.theme.cardFg)
             Text("Du hast noch keine Meldungen erfasst. Scanne ein Produkt und melde einen Mangel.")
-                .font(.subheadline).foregroundColor(Color.theme.bodyText)
+                .font(.subheadline).foregroundColor(Color.theme.cardFg)
                 .multilineTextAlignment(.center)
         }
         .frame(maxWidth: .infinity).padding(.top, 80).padding(.horizontal, 40)
@@ -150,16 +150,16 @@ private struct MessageRow: View {
                     VStack(alignment: .leading, spacing: 3) {
                         Text(message.title)
                             .font(.subheadline.weight(.semibold))
-                            .foregroundColor(Color.theme.bodyText).lineLimit(2)
+                            .foregroundColor(Color.theme.cardFg).lineLimit(2)
                         Text(message.displayProductName)
-                            .font(.caption).foregroundColor(Color.theme.bodyText.opacity(0.6)).lineLimit(1)
+                            .font(.caption).foregroundColor(Color.theme.mutedFg).lineLimit(1)
                     }
                     Spacer()
                     StatusPill(status: message.submissionStatus)
                 }
  
                 Text(message.displayBodyPreview)
-                    .font(.caption).foregroundColor(Color.theme.bodyText.opacity(0.7))
+                    .font(.caption).foregroundColor(Color.theme.mutedFg)
                     .lineLimit(2)
  
                 HStack(spacing: 10) {
@@ -167,11 +167,11 @@ private struct MessageRow: View {
                     CategoryChipSmall(category: message.category)
                     Spacer()
                     Text(message.createdAt.formatted(.dateTime.day().month(.abbreviated).year()))
-                        .font(.caption2).foregroundColor(Color.theme.bodyText.opacity(0.4))
+                        .font(.caption2).foregroundColor(Color.theme.mutedFg)
                 }
             }
             .padding(14)
-            .background(Color.theme.oatMilk.opacity(0.85))
+            .background(Color.theme.cardBg)
             .cornerRadius(14)
         }
         .buttonStyle(.plain)
@@ -181,9 +181,9 @@ private struct MessageRow: View {
         switch message.severity {
         case .critical: return Color.theme.error
         case .high:     return Color.theme.warning
-        case .medium:   return .orange
+        case .medium:   return Color.theme.warning
         case .low:      return Color.theme.infso
-        default:        return Color.theme.bodyText.opacity(0.5)
+        default:        return Color.theme.mutedFg
         }
     }
 }
@@ -204,9 +204,9 @@ private struct StatusPill: View {
     }
     private var color: Color {
         switch status {
-        case .draft:     return Color.theme.bodyText.opacity(0.5)
-        case .submitted: return .orange
-        case .published: return .green
+        case .draft:     return Color.theme.mutedFg
+        case .submitted: return Color.theme.warning
+        case .published: return Color.theme.success
         case .rejected:  return Color.theme.error
         }
     }
@@ -222,15 +222,15 @@ private struct SeverityChipSmall: View {
         switch severity { case .low: return "Niedrig"; case .medium: return "Mittel"; case .high: return "Hoch"; case .critical: return "Kritisch"; default: return "Info" }
     }
     private var color: Color {
-        switch severity { case .low: return Color.theme.infso; case .medium: return .orange; case .high: return Color.theme.warning; case .critical: return Color.theme.error; default: return Color.theme.bodyText.opacity(0.5) }
+        switch severity { case .low: return Color.theme.infso; case .medium: return Color.theme.warning; case .high: return Color.theme.warning; case .critical: return Color.theme.error; default: return Color.theme.mutedFg }
     }
 }
  
 private struct CategoryChipSmall: View {
     let category: AlertCategory
     var body: some View {
-        Text(label).font(.caption2).foregroundColor(Color.theme.bodyText.opacity(0.6))
-            .padding(.horizontal, 6).padding(.vertical, 2).background(Color.theme.oatMilk).cornerRadius(6)
+        Text(label).font(.caption2).foregroundColor(Color.theme.mutedFg)
+            .padding(.horizontal, 6).padding(.vertical, 2).background(Color.theme.cardBg).cornerRadius(6)
     }
     private var label: String {
         switch category {
@@ -257,7 +257,7 @@ struct MessageDetailView: View {
  
     var body: some View {
         ZStack(alignment: .top) {
-            Color.theme.warmPearl.ignoresSafeArea()
+            Color.theme.baseBg.ignoresSafeArea()
             ScrollView(showsIndicators: false) {
                 VStack(alignment: .leading, spacing: 20) {
                     Color.clear.frame(height: 60)
@@ -303,7 +303,7 @@ struct MessageDetailView: View {
                     Image(systemName: "exclamationmark.bubble.fill").font(.system(size: 20)).foregroundColor(severityColor)
                 }
                 VStack(alignment: .leading, spacing: 4) {
-                    Text(message.title).font(.title3.weight(.bold)).foregroundColor(Color.theme.bodyText).lineLimit(2)
+                    Text(message.title).font(.title3.weight(.bold)).foregroundColor(Color.theme.cardFg).lineLimit(2)
                     HStack(spacing: 8) {
                         SeverityChipSmall(severity: message.severity)
                         StatusPill(status: message.submissionStatus)
@@ -311,30 +311,30 @@ struct MessageDetailView: View {
                 }
                 Spacer()
             }
-            Text(message.body).font(.subheadline).foregroundColor(Color.theme.bodyText.opacity(0.8))
+            Text(message.body).font(.subheadline).foregroundColor(Color.theme.mutedFg)
                 .fixedSize(horizontal: false, vertical: true)
         }
-        .padding(14).background(Color.theme.bodyText).cornerRadius(14)
+        .padding(14).background(Color.theme.cardBg).cornerRadius(14)
     }
  
     private var productCard: some View {
         Button { showProductDetail = true } label: {
             HStack(spacing: 12) {
                 ZStack {
-                    RoundedRectangle(cornerRadius: 8).fill(Color.theme.softOliveFog.opacity(0.3)).frame(width: 44, height: 44)
-                    Image(systemName: "cart.fill").font(.system(size: 18)).foregroundColor(Color.theme.mutedSage)
+                    RoundedRectangle(cornerRadius: 8).fill(Color.theme.mutedBg).frame(width: 44, height: 44)
+                    Image(systemName: "cart.fill").font(.system(size: 18)).foregroundColor(Color.theme.accentFg)
                 }
                 VStack(alignment: .leading, spacing: 2) {
-                    Text(message.displayProductName).font(.subheadline.weight(.semibold)).foregroundColor(Color.theme.bodyText).lineLimit(1)
+                    Text(message.displayProductName).font(.subheadline.weight(.semibold)).foregroundColor(Color.theme.cardFg).lineLimit(1)
                     if let brand = message.productSnapshot.brand {
-                        Text(brand).font(.caption).foregroundColor(Color.theme.bodyText.opacity(0.5))
+                        Text(brand).font(.caption).foregroundColor(Color.theme.mutedFg)
                     }
-                    Text("Barcode: \(message.barcode)").font(.caption2).foregroundColor(Color.theme.bodyText.opacity(0.4))
+                    Text("Barcode: \(message.barcode)").font(.caption2).foregroundColor(Color.theme.mutedFg)
                 }
                 Spacer()
-                Image(systemName: "chevron.right").font(.caption2).foregroundColor(Color.theme.bodyText.opacity(0.3))
+                Image(systemName: "chevron.right").font(.caption2).foregroundColor(Color.theme.mutedFg.opacity(0.35))
             }
-            .padding(12).background(Color.theme.bodyText).cornerRadius(12)
+            .padding(12).background(Color.theme.cardBg).cornerRadius(12)
         }
         .buttonStyle(.plain)
     }
@@ -357,7 +357,7 @@ struct MessageDetailView: View {
                         InfoRow(label: "Charge", value: batch)
                     }
                 }
-                .background(Color.theme.bodyText).cornerRadius(12)
+                .background(Color.theme.cardBg).cornerRadius(12)
             }
         }
     }
@@ -365,7 +365,7 @@ struct MessageDetailView: View {
     private var severityColor: Color {
         switch message.severity {
         case .critical: return Color.theme.error; case .high: return Color.theme.warning
-        case .medium: return .orange; case .low: return Color.theme.infso; default: return Color.theme.bodyText.opacity(0.5)
+        case .medium: return Color.theme.warning; case .low: return Color.theme.infso; default: return Color.theme.mutedFg
         }
     }
  
@@ -386,5 +386,5 @@ struct MessageDetailView: View {
         .environmentObject(ThemeManager())
         .environmentObject(TomapoUserMessageStore())
         .environmentObject(ScanHistoryStore())
-        .background(Color.theme.warmPearl)
+        .background(Color.theme.baseBg)
 }

@@ -13,7 +13,7 @@ struct ProductStationsScreen: View {
  
     var body: some View {
         ZStack(alignment: .top) {
-            Color.theme.warmPearl.ignoresSafeArea()
+            Color.theme.baseBg.ignoresSafeArea()
             ScrollView(showsIndicators: false) {
                 VStack(alignment: .leading, spacing: 20) {
                     Color.clear.frame(height: 60)
@@ -24,7 +24,7 @@ struct ProductStationsScreen: View {
  
                     // Kühlketten-Summary (wenn relevant)
                     if product.requiresColdChain {
-                        ColdChainSummaryCard(summary: product.coldChainSummary)
+                        ColdChainCardView(summary: product.coldChainSummary, stations: product.stations)
                             .padding(.horizontal, 16)
                     }
  
@@ -53,8 +53,8 @@ struct ProductStationsScreen: View {
  
     private var emptyState: some View {
         VStack(spacing: 12) {
-            Image(systemName: "arrow.triangle.branch").font(.system(size: 40)).foregroundColor(Color.theme.bodyText.opacity(0.2))
-            Text("Keine Stationsdaten verfügbar").font(.subheadline).foregroundColor(Color.theme.bodyText.opacity(0.5))
+            Image(systemName: "arrow.triangle.branch").font(.system(size: 40)).foregroundColor(Color.theme.mutedFg.opacity(0.25))
+            Text("Keine Stationsdaten verfügbar").font(.subheadline).foregroundColor(Color.theme.mutedFg)
         }
         .frame(maxWidth: .infinity).padding(.top, 60)
     }
@@ -69,23 +69,23 @@ private struct TraceabilityScoreCard: View {
         VStack(spacing: 12) {
             HStack(spacing: 14) {
                 ZStack {
-                    Circle().stroke(Color.theme.bodyText.opacity(0.15), lineWidth: 5).frame(width: 52, height: 52)
+                    Circle().stroke(Color.theme.mutedFg.opacity(0.2), lineWidth: 5).frame(width: 52, height: 52)
                     Circle().trim(from: 0, to: score.completeness)
                         .stroke(scoreColor, style: StrokeStyle(lineWidth: 5, lineCap: .round))
                         .frame(width: 52, height: 52).rotationEffect(.degrees(-90))
                     Text("\(Int(score.completeness * 100))%")
-                        .font(.system(size: 12, weight: .bold)).foregroundColor(Color.theme.bodyText)
+                        .font(.system(size: 12, weight: .bold)).foregroundColor(Color.theme.cardFg)
                 }
                 VStack(alignment: .leading, spacing: 4) {
-                    Text("Rückverfolgbarkeit").font(.subheadline.weight(.semibold)).foregroundColor(Color.theme.bodyText)
+                    Text("Rückverfolgbarkeit").font(.subheadline.weight(.semibold)).foregroundColor(Color.theme.cardFg)
                     HStack(spacing: 10) {
                         if score.verifiedStations > 0 {
                             Label("\(score.verifiedStations) verifiziert", systemImage: "checkmark.seal.fill")
-                                .font(.caption2).foregroundColor(.green)
+                                .font(.caption2).foregroundColor(Color.theme.success)
                         }
                         if score.unknownStations > 0 {
                             Label("\(score.unknownStations) unbekannt", systemImage: "questionmark.circle")
-                                .font(.caption2).foregroundColor(Color.theme.bodyText.opacity(0.5))
+                                .font(.caption2).foregroundColor(Color.theme.mutedFg)
                         }
                     }
                     if score.hasGaps {
@@ -94,50 +94,20 @@ private struct TraceabilityScoreCard: View {
                 }
                 Spacer()
                 if score.isThirdPartyVerified {
-                    Image(systemName: "checkmark.seal.fill").foregroundColor(.green).font(.title3)
+                    Image(systemName: "checkmark.seal.fill").foregroundColor(Color.theme.success).font(.title3)
                 }
             }
         }
         .padding(14)
-        .background(Color.theme.oatMilk).cornerRadius(14)
+        .background(Color.theme.cardBg).cornerRadius(14)
     }
  
     private var scoreColor: Color {
-        score.completeness >= 0.8 ? .green : score.completeness >= 0.5 ? .orange : .red
+        score.completeness >= 0.8 ? Color.theme.success : score.completeness >= 0.5 ? Color.theme.warning : Color.theme.error
     }
 }
  
-// MARK: - Cold Chain Summary Card
- 
-private struct ColdChainSummaryCard: View {
-    let summary: TomapoColdChainSummary
- 
-    var body: some View {
-        VStack(alignment: .leading, spacing: 10) {
-            HStack(spacing: 6) {
-                Image(systemName: "snowflake").font(.caption).foregroundColor(.cyan)
-                Text("KÜHLKETTE".uppercased()).font(.caption.weight(.semibold))
-                    .foregroundColor(Color.theme.bodyText.opacity(0.55)).tracking(0.5)
-                Spacer()
-                Image(systemName: summary.isIntact ? "checkmark.circle.fill" : "exclamationmark.triangle.fill")
-                    .foregroundColor(summary.isIntact ? .green : Color.theme.warning)
-            }
-            if let text = summary.summaryText {
-                Text(text).font(.caption).foregroundColor(Color.theme.bodyText.opacity(0.7))
-            }
-            HStack(spacing: 16) {
-                StatPill(label: "Gekühlte Stationen", value: "\(summary.refrigeratedStationCount)", color: .cyan)
-                if summary.hadColdChainBreak {
-                    StatPill(label: "Unterbrechungen", value: "\(summary.coldChainBreakCount)", color: Color.theme.warning)
-                }
-                if let max = summary.highestTemperatureCelsius {
-                    StatPill(label: "Max. Temp.", value: String(format: "%.1f°C", max), color: .cyan)
-                }
-            }
-        }
-        .padding(14).background(Color.theme.oatMilk).cornerRadius(14)
-    }
-}
+
  
 // MARK: - Data Sources Card
  
@@ -147,17 +117,17 @@ private struct DataSourcesCard: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 10) {
             HStack(spacing: 6) {
-                Image(systemName: "database.fill").font(.caption).foregroundColor(Color.theme.bodyText.opacity(0.5))
+                Image(systemName: "database.fill").font(.caption).foregroundColor(Color.theme.mutedFg)
                 Text("DATENQUELLEN".uppercased()).font(.caption.weight(.semibold))
-                    .foregroundColor(Color.theme.bodyText.opacity(0.55)).tracking(0.5)
+                    .foregroundColor(Color.theme.mutedFg).tracking(0.5)
             }
             VStack(spacing: 0) {
                 ForEach(sources, id: \.id) { source in
                     HStack {
                         VStack(alignment: .leading, spacing: 2) {
-                            Text(source.name).font(.subheadline).foregroundColor(Color.theme.bodyText)
+                            Text(source.name).font(.subheadline).foregroundColor(Color.theme.cardFg)
                             Text(source.type.rawValue.replacingOccurrences(of: "_", with: " ").capitalized)
-                                .font(.caption2).foregroundColor(Color.theme.bodyText.opacity(0.5))
+                                .font(.caption2).foregroundColor(Color.theme.mutedFg)
                         }
                         Spacer()
                         ReliabilityBadge(reliability: source.reliability)
@@ -166,7 +136,7 @@ private struct DataSourcesCard: View {
                     if source.id != sources.last?.id { Divider().padding(.leading, 14) }
                 }
             }
-            .background(Color.theme.oatMilk).cornerRadius(12)
+            .background(Color.theme.cardBg).cornerRadius(12)
         }
     }
 }
@@ -180,19 +150,11 @@ private struct ReliabilityBadge: View {
     }
     private var color: Color {
         switch reliability {
-        case .verified, .official: return .green
-        case .community:           return .orange
-        case .estimated, .unknown: return Color.theme.bodyText.opacity(0.5)
+        case .verified, .official: return Color.theme.success
+        case .community:           return Color.theme.warning
+        case .estimated, .unknown: return Color.theme.mutedFg
         }
     }
 }
  
-private struct StatPill: View {
-    let label: String; let value: String; let color: Color
-    var body: some View {
-        VStack(spacing: 2) {
-            Text(value).font(.subheadline.weight(.bold)).foregroundColor(color)
-            Text(label).font(.caption2).foregroundColor(Color.theme.bodyText.opacity(0.5)).multilineTextAlignment(.center)
-        }
-    }
-}
+

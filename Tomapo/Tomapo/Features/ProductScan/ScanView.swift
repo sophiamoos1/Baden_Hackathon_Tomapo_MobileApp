@@ -178,7 +178,7 @@ struct ScanView: View {
                     .padding(.vertical, 8)
                     .background(
                         RoundedRectangle(cornerRadius: 10)
-                            .fill(Color.theme.accentTerracotta)
+                            .fill(Color.theme.accentFg)
                     )
             }
             .disabled(!canConfirmBatchID)

@@ -19,8 +19,8 @@ struct ProductDetailBoxesView: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 10) {
             HStack(spacing: 6) {
-                Image(systemName: "square.grid.2x2.fill").font(.caption).foregroundColor(Color.theme.bodyText.opacity(0.5))
-                Text("DETAILS").font(.caption.weight(.semibold)).foregroundColor(Color.theme.bodyText.opacity(0.55)).tracking(0.5)
+                Image(systemName: "square.grid.2x2.fill").font(.caption).foregroundColor(Color.theme.mutedFg)
+                Text("DETAILS").font(.caption.weight(.semibold)).foregroundColor(Color.theme.mutedFg).tracking(0.5)
             }
 
             LazyVGrid(columns: [GridItem(.flexible()), GridItem(.flexible())], spacing: 12) {
@@ -34,7 +34,7 @@ struct ProductDetailBoxesView: View {
                     subtitle: product.traceabilityScore.completeness >= 0.8
                         ? "Vollständig rückverfolgbar"
                         : "\(Int(product.traceabilityScore.completeness * 100))% rückverfolgbar",
-                    accentColor: .green
+                    accentColor: Color.theme.success
                 ) { showStations = true }
                 .fullScreenCover(isPresented: $showStations) {
                     ProductStationsScreen(product: product, onBack: { showStations = false })
@@ -47,7 +47,7 @@ struct ProductDetailBoxesView: View {
                     badge: ingredientsBadge,
                     badgeColor: additivesColor,
                     subtitle: product.ingredientsText != nil ? "Zutaten vorhanden" : "Keine Daten",
-                    accentColor: .blue
+                    accentColor: Color.theme.infso
                 ) { showIngredients = true }
                 .fullScreenCover(isPresented: $showIngredients) {
                     ProductIngredientsScreen(product: product, onBack: { showIngredients = false })
@@ -72,9 +72,9 @@ struct ProductDetailBoxesView: View {
                     icon: "info.circle.fill",
                     title: "Details",
                     badge: "\(product.certifications.filter(\.isCurrentlyValid).count) Zertifikate",
-                    badgeColor: .green,
+                    badgeColor: Color.theme.success,
                     subtitle: "Herkunft, Verpackung, CO₂",
-                    accentColor: Color.theme.mutedSage
+                    accentColor: Color.theme.accentFg
                 ) { showInfo = true }
                 .fullScreenCover(isPresented: $showInfo) {
                     ProductInfoScreen(product: product, onBack: { showInfo = false })
@@ -93,12 +93,12 @@ struct ProductDetailBoxesView: View {
 
     private var additivesColor: Color {
         let n = product.additivesN ?? 0
-        return n > 5 ? Color.theme.warning : n > 0 ? Color.theme.infso : .green
+        return n > 5 ? Color.theme.warning : n > 0 ? Color.theme.infso : Color.theme.success
     }
 
     private var stationsColor: Color {
-        product.traceabilityScore.completeness >= 0.8 ? .green
-        : product.traceabilityScore.completeness >= 0.5 ? .orange : .red
+        product.traceabilityScore.completeness >= 0.8 ? Color.theme.success
+        : product.traceabilityScore.completeness >= 0.5 ? Color.theme.warning : Color.theme.error
     }
 
     private var alertsBadge: String {
@@ -107,7 +107,7 @@ struct ProductDetailBoxesView: View {
     }
 
     private var alertsColor: Color {
-        guard let sev = product.highestAlertSeverity else { return .green }
+        guard let sev = product.highestAlertSeverity else { return Color.theme.success }
         switch sev {
         case .critical: return Color.theme.error
         case .high:     return Color.theme.warning
@@ -144,7 +144,7 @@ struct DetailBox: View {
                     Spacer()
                     Image(systemName: "chevron.right")
                         .font(.caption2)
-                        .foregroundColor(Color.theme.bodyText.opacity(0.3))
+                        .foregroundColor(Color.theme.mutedFg.opacity(0.35))
                 }
 
                 VStack(alignment: .leading, spacing: 4) {
@@ -155,18 +155,18 @@ struct DetailBox: View {
 
                     Text(title)
                         .font(.subheadline.weight(.semibold))
-                        .foregroundColor(Color.theme.oatMilk)
+                        .foregroundColor(Color.theme.cardFg)
                         .lineLimit(1)
 
                     Text(subtitle)
                         .font(.caption2)
-                        .foregroundColor(Color.theme.oatMilk.opacity(0.55))
+                        .foregroundColor(Color.theme.mutedFg)
                         .lineLimit(2)
                 }
             }
             .padding(14)
             .frame(maxWidth: .infinity, alignment: .leading)
-            .background(Color.theme.oatMilk)
+            .background(Color.theme.cardBg)
             .cornerRadius(14)
         }
         .buttonStyle(.plain)

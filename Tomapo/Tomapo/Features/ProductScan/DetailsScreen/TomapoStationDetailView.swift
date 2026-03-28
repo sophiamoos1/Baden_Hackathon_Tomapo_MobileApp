@@ -16,7 +16,7 @@
  
  var body: some View {
  ZStack(alignment: .top) {
- Color.theme.warmPearl.ignoresSafeArea()
+ Color.theme.baseBg.ignoresSafeArea()
  ScrollView(showsIndicators: false) {
  VStack(alignment: .leading, spacing: 20) {
  Color.clear.frame(height: 60) // Platz für BackBar
@@ -54,7 +54,7 @@
  VStack(alignment: .leading, spacing: 5) {
  Text(station.title)
  .font(.title3.weight(.bold))
- .foregroundColor(Color.theme.bodyText)
+ .foregroundColor(Color.theme.cardFg)
  
  HStack(spacing: 6) {
  Circle()
@@ -64,16 +64,16 @@
  .font(.caption)
  .foregroundColor(statusColor)
  Text("·")
- .foregroundColor(Color.theme.bodyText.opacity(0.3))
+ .foregroundColor(Color.theme.mutedFg.opacity(0.35))
  Text(stationTypeLabel)
  .font(.caption)
- .foregroundColor(Color.theme.bodyText.opacity(0.5))
+ .foregroundColor(Color.theme.mutedFg)
  }
  }
  Spacer()
  }
  .padding()
- .background(Color.theme.oatMilk)
+ .background(Color.theme.cardBg)
  .cornerRadius(16)
  }
  
@@ -112,27 +112,27 @@
  if station.isVerified {
  DetailRow(label: "Verifiziert von",
  value: station.verifiedBy ?? "Ja",
- valueColor: .green)
+ valueColor: Color.theme.success)
  } else {
  DetailRow(label: "Verifiziert", value: "Nicht verifiziert",
- valueColor: Color.theme.bodyText.opacity(0.4))
+ valueColor: Color.theme.mutedFg.opacity(0.5))
  }
  if let notes = station.notes {
  Divider().padding(.leading, 16)
  VStack(alignment: .leading, spacing: 4) {
  Text("Notizen")
  .font(.caption)
- .foregroundColor(Color.theme.bodyText.opacity(0.5))
+ .foregroundColor(Color.theme.mutedFg)
  Text(notes)
  .font(.caption)
- .foregroundColor(Color.theme.bodyText.opacity(0.7))
+ .foregroundColor(Color.theme.mutedFg)
  .fixedSize(horizontal: false, vertical: true)
  }
  .padding(.horizontal, 16)
  .padding(.vertical, 12)
  }
  }
- .background(Color.theme.oatMilk)
+ .background(Color.theme.cardBg)
  .cornerRadius(14)
  }
  }
@@ -183,9 +183,9 @@
  case .warning:    return Color.theme.warning
  case .failed:     return Color.theme.error
  case .active:     return Color.theme.infso
- case .pending:    return Color.theme.bodyText.opacity(0.5)
- case .skipped:    return Color.theme.bodyText.opacity(0.3)
- case .unknown:    return Color.theme.bodyText.opacity(0.35)
+ case .pending:    return Color.theme.mutedFg
+ case .skipped:    return Color.theme.mutedFg.opacity(0.35)
+ case .unknown:    return Color.theme.mutedFg.opacity(0.4)
  }
  }
  
@@ -265,7 +265,7 @@
  if let area = detail.areaHectares { InfoDetailRow(label: "Fläche", value: "\(String(format: "%.1f", area)) ha") }
  if !detail.fertilizerTypes.isEmpty { InfoDetailRow(label: "Dünger", value: detail.fertilizerTypes.map { $0.rawValue }.joined(separator: ", ")) }
  if !detail.pesticideTypes.isEmpty { InfoDetailRow(label: "⚠ Pestizide", value: detail.pesticideTypes.joined(separator: ", "), valueColor: Color.theme.warning) }
- else { InfoDetailRow(label: "Pestizide", value: "Keine", valueColor: .green) }
+ else { InfoDetailRow(label: "Pestizide", value: "Keine", valueColor: Color.theme.success) }
  if let irr = detail.irrigationType { InfoDetailRow(label: "Bewässerung", value: irr.rawValue.replacingOccurrences(of: "_", with: " ").capitalized) }
  if let soil = detail.soilType { InfoDetailRow(label: "Bodentyp", value: soil) }
  if let planting = detail.plantingDate { InfoDetailRow(label: "Pflanzung", value: planting.formatted(.dateTime.day().month(.abbreviated).year())) }
@@ -290,8 +290,8 @@
  if let vessel = detail.vessel { InfoDetailRow(label: "Schiff", value: vessel) }
  if let id = detail.vesselId { InfoDetailRow(label: "IMO-Nummer", value: id) }
  if let date = detail.catchDate { InfoDetailRow(label: "Fangdatum", value: date.formatted(.dateTime.day().month().year())) }
- InfoDetailRow(label: "MSC-zertifiziert", value: detail.isMscCertified ? "Ja" : "Nein", valueColor: detail.isMscCertified ? .green : Color.theme.bodyText.opacity(0.5))
- InfoDetailRow(label: "ASC-zertifiziert", value: detail.isAscCertified ? "Ja" : "Nein", valueColor: detail.isAscCertified ? .green : Color.theme.bodyText.opacity(0.5))
+ InfoDetailRow(label: "MSC-zertifiziert", value: detail.isMscCertified ? "Ja" : "Nein", valueColor: detail.isMscCertified ? Color.theme.success : Color.theme.mutedFg)
+ InfoDetailRow(label: "ASC-zertifiziert", value: detail.isAscCertified ? "Ja" : "Nein", valueColor: detail.isAscCertified ? Color.theme.success : Color.theme.mutedFg)
  if let bc = detail.bycatchInfo { InfoDetailRow(label: "Beifang-Info", value: bc) }
  }
  }
@@ -323,7 +323,7 @@
  if let past = detail.pasteurization { InfoDetailRow(label: "Pasteurisierung", value: "\(past.method.rawValue.uppercased()) · \(Int(past.temperatureCelsius))°C / \(past.durationSeconds)s") }
  if let steril = detail.sterilization { InfoDetailRow(label: "Sterilisierung", value: "\(Int(steril.temperatureCelsius))°C / \(steril.durationMinutes) Min.") }
  if !detail.additivesAdded.isEmpty { InfoDetailRow(label: "Zusatzstoffe", value: detail.additivesAdded.map { $0.replacingOccurrences(of: "en:", with: "").uppercased() }.joined(separator: ", ")) }
- InfoDetailRow(label: "HACCP", value: detail.isHaccpCertified ? "Zertifiziert" : "Nicht zertifiziert", valueColor: detail.isHaccpCertified ? .green : Color.theme.bodyText.opacity(0.5))
+ InfoDetailRow(label: "HACCP", value: detail.isHaccpCertified ? "Zertifiziert" : "Nicht zertifiziert", valueColor: detail.isHaccpCertified ? Color.theme.success : Color.theme.mutedFg)
  if let standard = detail.foodSafetyStandard { InfoDetailRow(label: "Standard", value: standard.rawValue.uppercased().replacingOccurrences(of: "_", with: " ")) }
  if let batch = detail.batchSizeKg { InfoDetailRow(label: "Chargengrösse", value: "\(String(format: "%.0f", batch)) kg") }
  }
@@ -341,16 +341,16 @@
  VStack(alignment: .leading, spacing: 2) {
  Text(mat.shape ?? mat.material.replacingOccurrences(of: "en:", with: ""))
  .font(.subheadline)
- .foregroundColor(Color.theme.bodyText)
+ .foregroundColor(Color.theme.cardFg)
  Text(mat.isRecyclable ? "♻ Recyclebar" : "Nicht recyclebar")
  .font(.caption2)
- .foregroundColor(mat.isRecyclable ? .green : .red)
+ .foregroundColor(mat.isRecyclable ? Color.theme.success : Color.theme.error)
  }
  Spacer()
  if let w = mat.weightGrams {
  Text("\(String(format: "%.1f", w))g")
  .font(.caption)
- .foregroundColor(Color.theme.bodyText.opacity(0.5))
+ .foregroundColor(Color.theme.mutedFg)
  }
  }
  .padding(.horizontal, 16).padding(.vertical, 10)
@@ -383,7 +383,7 @@
  if let temp = detail.averageTemperatureCelsius { InfoDetailRow(label: "Ø Temperatur", value: "\(String(format: "%.1f", temp))°C") }
  if let hum = detail.humidityPercent { InfoDetailRow(label: "Luftfeuchtigkeit", value: "\(String(format: "%.0f", hum))%") }
  if let light = detail.lightCondition { InfoDetailRow(label: "Lichtverhältnis", value: light.rawValue.capitalized) }
- InfoDetailRow(label: "Max. Dauer überschritten", value: detail.maxDurationExceeded ? "⚠ Ja" : "Nein", valueColor: detail.maxDurationExceeded ? Color.theme.error : .green)
+ InfoDetailRow(label: "Max. Dauer überschritten", value: detail.maxDurationExceeded ? "⚠ Ja" : "Nein", valueColor: detail.maxDurationExceeded ? Color.theme.error : Color.theme.success)
  }
  }
  }
@@ -397,7 +397,7 @@
  if let min = detail.minActualTemperatureCelsius { InfoDetailRow(label: "Minimum", value: "\(String(format: "%.1f", min))°C") }
  if let max = detail.maxActualTemperatureCelsius { InfoDetailRow(label: "Maximum", value: "\(String(format: "%.1f", max))°C") }
  if let avg = detail.avgActualTemperatureCelsius { InfoDetailRow(label: "Durchschnitt", value: "\(String(format: "%.1f", avg))°C") }
- InfoDetailRow(label: "Kühlkette unterbrochen", value: detail.coldChainBroken ? "⚠ Ja" : "Intakt", valueColor: detail.coldChainBroken ? Color.theme.error : .green)
+ InfoDetailRow(label: "Kühlkette unterbrochen", value: detail.coldChainBroken ? "⚠ Ja" : "Intakt", valueColor: detail.coldChainBroken ? Color.theme.error : Color.theme.success)
  if !detail.coldChainBreaks.isEmpty {
  ForEach(Array(detail.coldChainBreaks.enumerated()), id: \.offset) { i, brk in
  InfoDetailRow(label: "Unterbrechung \(i+1)",
@@ -409,7 +409,7 @@
  if let last = detail.lastSensorReading {
  InfoDetailRow(label: "Letzte Messung",
  value: "\(String(format: "%.1f", last.temperatureCelsius))°C · \(last.timestamp.formatted(.dateTime.hour().minute()))",
- valueColor: last.isWithinRange ? .green : Color.theme.warning)
+ valueColor: last.isWithinRange ? Color.theme.success : Color.theme.warning)
  }
  }
  }
@@ -449,8 +449,8 @@
  if let inb = detail.inboundDate { InfoDetailRow(label: "Eingang", value: inb.formatted(.dateTime.day().month().year().hour().minute())) }
  if let out = detail.outboundDate { InfoDetailRow(label: "Ausgang", value: out.formatted(.dateTime.day().month().year().hour().minute())) }
  if let count = detail.handlingCount { InfoDetailRow(label: "Umschlagsvorgänge", value: "\(count)") }
- InfoDetailRow(label: "Zollabgefertigt", value: detail.customsCleared ? "Ja" : "Nein", valueColor: detail.customsCleared ? .green : Color.theme.bodyText.opacity(0.5))
- if let imp = detail.importInspectionPassed { InfoDetailRow(label: "Einfuhrkontrolle", value: imp ? "Bestanden" : "Nicht bestanden", valueColor: imp ? .green : Color.theme.error) }
+ InfoDetailRow(label: "Zollabgefertigt", value: detail.customsCleared ? "Ja" : "Nein", valueColor: detail.customsCleared ? Color.theme.success : Color.theme.mutedFg)
+ if let imp = detail.importInspectionPassed { InfoDetailRow(label: "Einfuhrkontrolle", value: imp ? "Bestanden" : "Nicht bestanden", valueColor: imp ? Color.theme.success : Color.theme.error) }
  if let by = detail.inspectedBy { InfoDetailRow(label: "Kontrolliert von", value: by) }
  }
  }
@@ -481,7 +481,7 @@
  if let name = detail.laboratoryName { InfoDetailRow(label: "Labor", value: name) }
  if let accred = detail.accreditationNumber { InfoDetailRow(label: "Akkreditierung", value: accred) }
  if let body = detail.accreditationBody { InfoDetailRow(label: "Akkreditierungsstelle", value: body) }
- InfoDetailRow(label: "ISO 17025", value: detail.isIso17025Accredited ? "Akkreditiert ✓" : "Nicht akkreditiert", valueColor: detail.isIso17025Accredited ? .green : Color.theme.bodyText.opacity(0.5))
+ InfoDetailRow(label: "ISO 17025", value: detail.isIso17025Accredited ? "Akkreditiert ✓" : "Nicht akkreditiert", valueColor: detail.isIso17025Accredited ? Color.theme.success : Color.theme.mutedFg)
  InfoDetailRow(label: "Labortyp", value: detail.laboratoryType.rawValue.replacingOccurrences(of: "_", with: " ").capitalized)
  }
  
@@ -527,9 +527,9 @@
  if let salt = n.saltG { InfoDetailRow(label: "Salz", value: "\(String(format: "%.2f", salt))g/100g") }
  if let dev = n.deviationFromDeclarationPercent {
  InfoDetailRow(label: "Abweichung Deklaration", value: "\(String(format: "%.1f", dev))%",
- valueColor: abs(dev) <= 20 ? .green : Color.theme.error)
+ valueColor: abs(dev) <= 20 ? Color.theme.success : Color.theme.error)
  }
- InfoDetailRow(label: "EU-Toleranz ±20%", value: n.isWithinEuTolerance ? "Eingehalten ✓" : "Überschritten ✗", valueColor: n.isWithinEuTolerance ? .green : Color.theme.error)
+ InfoDetailRow(label: "EU-Toleranz ±20%", value: n.isWithinEuTolerance ? "Eingehalten ✓" : "Überschritten ✗", valueColor: n.isWithinEuTolerance ? Color.theme.success : Color.theme.error)
  }
  }
  
@@ -541,15 +541,15 @@
  VStack(alignment: .leading, spacing: 2) {
  Text(r.parameter.rawValue.replacingOccurrences(of: "_", with: " ").capitalized)
  .font(.subheadline)
- .foregroundColor(Color.theme.bodyText)
+ .foregroundColor(Color.theme.cardFg)
  if let notes = r.notes {
- Text(notes).font(.caption2).foregroundColor(Color.theme.bodyText.opacity(0.5)).lineLimit(2)
+ Text(notes).font(.caption2).foregroundColor(Color.theme.mutedFg).lineLimit(2)
  }
  }
  Spacer()
  Text("\(String(format: "%.2f", r.measuredValue)) \(r.unit)")
  .font(.subheadline)
- .foregroundColor(r.isWithinSpec ? Color.theme.bodyText : Color.theme.error)
+ .foregroundColor(r.isWithinSpec ? Color.theme.cardFg : Color.theme.error)
  }
  .padding(.horizontal, 16).padding(.vertical, 10)
  }
@@ -571,15 +571,15 @@
  ForEach(Array(detail.authenticityResults.enumerated()), id: \.offset) { _, r in
  HStack(alignment: .top, spacing: 10) {
  Image(systemName: r.isAuthentic ? "checkmark.circle.fill" : "xmark.circle.fill")
- .foregroundColor(r.isAuthentic ? .green : Color.theme.error)
+ .foregroundColor(r.isAuthentic ? Color.theme.success : Color.theme.error)
  .font(.subheadline)
  VStack(alignment: .leading, spacing: 2) {
  Text(r.claim)
  .font(.subheadline)
- .foregroundColor(Color.theme.bodyText)
- if let method = r.method { Text(method).font(.caption2).foregroundColor(Color.theme.bodyText.opacity(0.5)) }
- if let conf = r.confidencePercent { Text("Konfidenz: \(String(format: "%.1f", conf))%").font(.caption2).foregroundColor(Color.theme.bodyText.opacity(0.5)) }
- if let notes = r.notes { Text(notes).font(.caption2).foregroundColor(Color.theme.bodyText.opacity(0.45)).lineLimit(3) }
+ .foregroundColor(Color.theme.cardFg)
+ if let method = r.method { Text(method).font(.caption2).foregroundColor(Color.theme.mutedFg) }
+ if let conf = r.confidencePercent { Text("Konfidenz: \(String(format: "%.1f", conf))%").font(.caption2).foregroundColor(Color.theme.mutedFg) }
+ if let notes = r.notes { Text(notes).font(.caption2).foregroundColor(Color.theme.mutedFg).lineLimit(3) }
  }
  }
  .padding(.horizontal, 16).padding(.vertical, 10)
@@ -590,9 +590,9 @@
  // Gesamtbewertung
  DetailCardSection(title: "Laborurteil", icon: "checkmark.seal.fill") {
  InfoDetailRow(label: "Gesamturteil", value: detail.overallVerdict.rawValue.replacingOccurrences(of: "_", with: " ").capitalized,
- valueColor: detail.overallVerdict == .compliant ? .green : detail.overallVerdict == .minorDeviation ? Color.theme.warning : Color.theme.error)
+ valueColor: detail.overallVerdict == .compliant ? Color.theme.success : detail.overallVerdict == .minorDeviation ? Color.theme.warning : Color.theme.error)
  InfoDetailRow(label: "Grenzwertüberschreitungen", value: "\(detail.exceedanceCount)",
- valueColor: detail.exceedanceCount == 0 ? .green : Color.theme.error)
+ valueColor: detail.exceedanceCount == 0 ? Color.theme.success : Color.theme.error)
  if let rec = detail.recommendation { InfoDetailRow(label: "Empfehlung", value: rec.rawValue.replacingOccurrences(of: "_", with: " ").capitalized) }
  if let signed = detail.signedBy { InfoDetailRow(label: "Unterzeichnet von", value: signed) }
  if let issued = detail.reportIssuedAt { InfoDetailRow(label: "Berichtsdatum", value: issued.formatted(.dateTime.day().month().year())) }
@@ -611,7 +611,7 @@
  VStack(alignment: .leading, spacing: 4) {
  Text(description)
  .font(.subheadline)
- .foregroundColor(Color.theme.bodyText.opacity(0.75))
+ .foregroundColor(Color.theme.mutedFg)
  .fixedSize(horizontal: false, vertical: true)
  }
  .padding(.horizontal, 16).padding(.vertical, 12)
@@ -627,10 +627,10 @@
  
  private var statusColor: Color {
  switch check.status {
- case .passed: return .green
+ case .passed: return Color.theme.success
  case .failed: return Color.theme.error
  case .warning: return Color.theme.warning
- default: return Color.theme.bodyText.opacity(0.4)
+ default: return Color.theme.mutedFg.opacity(0.5)
  }
  }
  
@@ -657,12 +657,12 @@
  VStack(alignment: .leading, spacing: 2) {
  Text(check.type.rawValue.replacingOccurrences(of: "_", with: " ").capitalized)
  .font(.subheadline.weight(.semibold))
- .foregroundColor(Color.theme.bodyText)
+ .foregroundColor(Color.theme.cardFg)
  .lineLimit(1)
  if let by = check.performedBy {
  Text(by)
  .font(.caption2)
- .foregroundColor(Color.theme.bodyText.opacity(0.5))
+ .foregroundColor(Color.theme.mutedFg)
  .lineLimit(1)
  }
  }
@@ -670,11 +670,11 @@
  if let date = check.performedAt {
  Text(date.formatted(.dateTime.day().month(.abbreviated)))
  .font(.caption2)
- .foregroundColor(Color.theme.bodyText.opacity(0.4))
+ .foregroundColor(Color.theme.mutedFg.opacity(0.5))
  }
  Image(systemName: expanded ? "chevron.up" : "chevron.down")
  .font(.caption)
- .foregroundColor(Color.theme.bodyText.opacity(0.35))
+ .foregroundColor(Color.theme.mutedFg.opacity(0.4))
  }
  .padding(12)
  }
@@ -687,26 +687,26 @@
  if let summary = check.resultSummary {
  Text(summary)
  .font(.caption)
- .foregroundColor(Color.theme.bodyText.opacity(0.75))
+ .foregroundColor(Color.theme.mutedFg)
  .fixedSize(horizontal: false, vertical: true)
  }
  HStack(spacing: 12) {
  if let accred = check.accreditationNumber {
  Label(accred, systemImage: "shield.checkered")
  .font(.caption2)
- .foregroundColor(Color.theme.bodyText.opacity(0.5))
+ .foregroundColor(Color.theme.mutedFg)
  }
  if let report = check.reportNumber {
  Label(report, systemImage: "doc.text")
  .font(.caption2)
- .foregroundColor(Color.theme.bodyText.opacity(0.5))
+ .foregroundColor(Color.theme.mutedFg)
  }
  }
  if let next = check.nextCheckDue {
  Label("Nächste Prüfung: \(next.formatted(.dateTime.day().month().year()))",
  systemImage: "calendar.badge.clock")
  .font(.caption2)
- .foregroundColor(Color.theme.bodyText.opacity(0.45))
+ .foregroundColor(Color.theme.mutedFg)
  }
  
  // Detail-spezifische Inhalte
@@ -715,7 +715,7 @@
  .padding(12)
  }
  }
- .background(Color.theme.oatMilk)
+ .background(Color.theme.cardBg)
  .cornerRadius(12)
  .overlay(
  RoundedRectangle(cornerRadius: 12)
@@ -733,15 +733,16 @@
  VStack(alignment: .leading, spacing: 4) {
  HStack {
  Text("Gemessen: \(String(format: "%.1f", d.measuredCelsius))°C")
- Spacer()
+ Spacer(minLength: 4)
  Text("Bereich: \(String(format: "%.1f", d.minAllowedCelsius))–\(String(format: "%.1f", d.maxAllowedCelsius))°C")
+ .lineLimit(1)
  }
  .font(.caption2)
- .foregroundColor(Color.theme.bodyText.opacity(0.6))
+ .foregroundColor(Color.theme.cardFg.opacity(0.6))
  if !d.log.isEmpty {
  Text("\(d.log.count) Messungen · Min: \(String(format: "%.1f", d.log.map(\.temperatureCelsius).min() ?? 0))°C · Max: \(String(format: "%.1f", d.log.map(\.temperatureCelsius).max() ?? 0))°C")
  .font(.caption2)
- .foregroundColor(Color.theme.bodyText.opacity(0.5))
+ .foregroundColor(Color.theme.mutedFg)
  }
  }
  
@@ -750,21 +751,21 @@
  ForEach(d.pathogensTested, id: \.pathogen) { p in
  HStack(spacing: 6) {
  Circle()
- .fill(p.detected ? Color.theme.error : .green)
+ .fill(p.detected ? Color.theme.error : Color.theme.success)
  .frame(width: 6, height: 6)
  Text(p.pathogen)
  .font(.caption2)
- .foregroundColor(Color.theme.bodyText.opacity(0.65))
+ .foregroundColor(Color.theme.cardFg.opacity(0.65))
  Spacer()
  Text(p.detected ? (p.limitExceeded ? "⚠ Limit überschritten" : "Nachgewiesen") : "n.d.")
  .font(.caption2)
- .foregroundColor(p.detected ? (p.limitExceeded ? Color.theme.error : Color.theme.warning) : .green)
+ .foregroundColor(p.detected ? (p.limitExceeded ? Color.theme.error : Color.theme.warning) : Color.theme.success)
  }
  }
  if let total = d.totalBacterialCount {
  Text("Gesamtkeimzahl: \(Int(total.totalCfu)) / \(Int(total.acceptableLimit)) KBE/g")
  .font(.caption2)
- .foregroundColor(total.isAcceptable ? .green : Color.theme.error)
+ .foregroundColor(total.isAcceptable ? Color.theme.success : Color.theme.error)
  }
  }
  
@@ -773,32 +774,32 @@
  ForEach(d.substancesTested, id: \.substance) { s in
  HStack(spacing: 6) {
  Circle()
- .fill(s.limitExceeded ? Color.theme.error : (s.measuredMgPerKg != nil ? .green : Color.theme.bodyText.opacity(0.3)))
+ .fill(s.limitExceeded ? Color.theme.error : (s.measuredMgPerKg != nil ? Color.theme.success : Color.theme.mutedFg.opacity(0.35)))
  .frame(width: 6, height: 6)
  Text(s.substance)
  .font(.caption2)
- .foregroundColor(Color.theme.bodyText.opacity(0.65))
+ .foregroundColor(Color.theme.cardFg.opacity(0.65))
  Spacer()
  if let v = s.measuredMgPerKg {
  Text("\(String(format: "%.4f", v)) \(s.unit)")
  .font(.caption2)
- .foregroundColor(s.limitExceeded ? Color.theme.error : Color.theme.bodyText.opacity(0.55))
+ .foregroundColor(s.limitExceeded ? Color.theme.error : Color.theme.mutedFg)
  } else {
- Text("n.d.").font(.caption2).foregroundColor(.green)
+ Text("n.d.").font(.caption2).foregroundColor(Color.theme.success)
  }
  }
  }
  }
  
  case .nutritional(let d):
- HStack(spacing: 16) {
- if let e = d.energyKcal { VStack { Text("\(Int(e))").font(.caption.weight(.bold)).foregroundColor(Color.theme.bodyText); Text("kcal").font(.caption2).foregroundColor(Color.theme.bodyText.opacity(0.5)) } }
- if let f = d.fatG { VStack { Text("\(String(format: "%.1f", f))g").font(.caption.weight(.bold)).foregroundColor(Color.theme.bodyText); Text("Fett").font(.caption2).foregroundColor(Color.theme.bodyText.opacity(0.5)) } }
- if let p = d.proteinsG { VStack { Text("\(String(format: "%.1f", p))g").font(.caption.weight(.bold)).foregroundColor(Color.theme.bodyText); Text("Protein").font(.caption2).foregroundColor(Color.theme.bodyText.opacity(0.5)) } }
+ HStack(spacing: 12) {
+ if let e = d.energyKcal { VStack { Text("\(Int(e))").font(.caption.weight(.bold)).foregroundColor(Color.theme.cardFg); Text("kcal").font(.caption2).foregroundColor(Color.theme.mutedFg) } }
+ if let f = d.fatG { VStack { Text("\(String(format: "%.1f", f))g").font(.caption.weight(.bold)).foregroundColor(Color.theme.cardFg); Text("Fett").font(.caption2).foregroundColor(Color.theme.mutedFg) } }
+ if let p = d.proteinsG { VStack { Text("\(String(format: "%.1f", p))g").font(.caption.weight(.bold)).foregroundColor(Color.theme.cardFg); Text("Protein").font(.caption2).foregroundColor(Color.theme.mutedFg) } }
  if let dev = d.deviationFromLabelPercent {
  VStack {
- Text("\(String(format: "%.1f", dev))%").font(.caption.weight(.bold)).foregroundColor(abs(dev) <= 20 ? .green : Color.theme.error)
- Text("Abw.").font(.caption2).foregroundColor(Color.theme.bodyText.opacity(0.5))
+ Text("\(String(format: "%.1f", dev))%").font(.caption.weight(.bold)).foregroundColor(abs(dev) <= 20 ? Color.theme.success : Color.theme.error)
+ Text("Abw.").font(.caption2).foregroundColor(Color.theme.mutedFg)
  }
  }
  }
@@ -806,31 +807,32 @@
  case .packaging(let d):
  HStack(spacing: 12) {
  Label(d.isSealed ? "Dicht" : "Undicht", systemImage: d.isSealed ? "checkmark" : "xmark")
- .foregroundColor(d.isSealed ? .green : Color.theme.error)
- Label(d.barcodeReadable ? "Barcode OK" : "Barcode fehler", systemImage: "barcode")
- .foregroundColor(d.barcodeReadable ? .green : Color.theme.error)
+ .foregroundColor(d.isSealed ? Color.theme.success : Color.theme.error)
+ Label(d.barcodeReadable ? "Barcode OK" : "Barcode Fehler", systemImage: "barcode")
+ .foregroundColor(d.barcodeReadable ? Color.theme.success : Color.theme.error)
  }
  .font(.caption2)
+ .lineLimit(1)
  
  case .visual(let d):
  HStack(spacing: 8) {
- if let grade = d.gradeAssigned { Text(grade).font(.caption2).foregroundColor(Color.theme.bodyText.opacity(0.65)) }
- if let rej = d.rejectionRate { Text("Ausschuss: \(String(format: "%.1f", rej))%").font(.caption2).foregroundColor(rej < 5 ? Color.theme.bodyText.opacity(0.55) : Color.theme.warning) }
+ if let grade = d.gradeAssigned { Text(grade).font(.caption2).foregroundColor(Color.theme.cardFg.opacity(0.65)) }
+ if let rej = d.rejectionRate { Text("Ausschuss: \(String(format: "%.1f", rej))%").font(.caption2).foregroundColor(rej < 5 ? Color.theme.mutedFg : Color.theme.warning) }
  }
  
  case .weight(let d):
- HStack(spacing: 16) {
- VStack { Text("\(String(format: "%.1f", d.targetWeightG))g").font(.caption.weight(.bold)).foregroundColor(Color.theme.bodyText); Text("Soll").font(.caption2).foregroundColor(Color.theme.bodyText.opacity(0.5)) }
- VStack { Text("\(String(format: "%.1f", d.measuredWeightG))g").font(.caption.weight(.bold)).foregroundColor(d.isWithinTolerance ? Color.theme.bodyText : Color.theme.error); Text("Ist").font(.caption2).foregroundColor(Color.theme.bodyText.opacity(0.5)) }
- VStack { Text("±\(String(format: "%.1f", d.tolerancePercent))%").font(.caption.weight(.bold)).foregroundColor(Color.theme.bodyText); Text("Toleranz").font(.caption2).foregroundColor(Color.theme.bodyText.opacity(0.5)) }
+ HStack(spacing: 12) {
+ VStack { Text("\(String(format: "%.1f", d.targetWeightG))g").font(.caption.weight(.bold)).foregroundColor(Color.theme.cardFg).lineLimit(1); Text("Soll").font(.caption2).foregroundColor(Color.theme.mutedFg) }
+ VStack { Text("\(String(format: "%.1f", d.measuredWeightG))g").font(.caption.weight(.bold)).foregroundColor(d.isWithinTolerance ? Color.theme.cardFg : Color.theme.error).lineLimit(1); Text("Ist").font(.caption2).foregroundColor(Color.theme.mutedFg) }
+ VStack { Text("±\(String(format: "%.1f", d.tolerancePercent))%").font(.caption.weight(.bold)).foregroundColor(Color.theme.cardFg).lineLimit(1); Text("Toleranz").font(.caption2).foregroundColor(Color.theme.mutedFg) }
  }
  
  case .certification(let d):
  VStack(alignment: .leading, spacing: 4) {
  HStack {
- Text(d.certificationBody).font(.caption2).foregroundColor(Color.theme.bodyText.opacity(0.65))
+ Text(d.certificationBody).font(.caption2).foregroundColor(Color.theme.cardFg.opacity(0.65))
  Spacer()
- if let score = d.score { Text("\(Int(score))/100").font(.caption2.weight(.bold)).foregroundColor(score >= 90 ? .green : score >= 70 ? Color.theme.warning : Color.theme.error) }
+ if let score = d.score { Text("\(Int(score))/100").font(.caption2.weight(.bold)).foregroundColor(score >= 90 ? Color.theme.success : score >= 70 ? Color.theme.warning : Color.theme.error) }
  }
  if !d.nonConformities.isEmpty {
  Text("\(d.nonConformities.count) Abweichungen · \(d.nonConformities.filter { $0.severity == .critical }.count) kritisch")
@@ -839,12 +841,12 @@
  }
  if let valid = d.certificateValidUntil {
  Text("Gültig bis \(valid.formatted(.dateTime.day().month().year()))")
- .font(.caption2).foregroundColor(Color.theme.bodyText.opacity(0.45))
+ .font(.caption2).foregroundColor(Color.theme.mutedFg)
  }
  }
  
  case .generic(let d):
- if let desc = d.description { Text(desc).font(.caption2).foregroundColor(Color.theme.bodyText.opacity(0.65)).lineLimit(3) }
+ if let desc = d.description { Text(desc).font(.caption2).foregroundColor(Color.theme.cardFg.opacity(0.65)).lineLimit(3) }
  }
  }
  }
@@ -856,25 +858,25 @@
  var body: some View {
  HStack(spacing: 8) {
  Circle()
- .fill(result.detected ? (result.limitExceeded ? Color.theme.error : Color.theme.warning) : .green)
+ .fill(result.detected ? (result.limitExceeded ? Color.theme.error : Color.theme.warning) : Color.theme.success)
  .frame(width: 7, height: 7)
  VStack(alignment: .leading, spacing: 2) {
  Text(result.pathogen)
  .font(.subheadline)
- .foregroundColor(Color.theme.bodyText)
+ .foregroundColor(Color.theme.cardFg)
  Text(result.testMethod)
  .font(.caption2)
- .foregroundColor(Color.theme.bodyText.opacity(0.45))
+ .foregroundColor(Color.theme.mutedFg)
  }
  Spacer()
  VStack(alignment: .trailing, spacing: 2) {
  Text(result.detected ? (result.limitExceeded ? "⚠ Limit!" : "Nachgewiesen") : "n.d.")
  .font(.caption.weight(.semibold))
- .foregroundColor(result.detected ? (result.limitExceeded ? Color.theme.error : Color.theme.warning) : .green)
+ .foregroundColor(result.detected ? (result.limitExceeded ? Color.theme.error : Color.theme.warning) : Color.theme.success)
  if let cfu = result.cfuPerGram, cfu > 0 {
  Text("\(String(format: "%.0f", cfu)) KBE/g")
  .font(.caption2)
- .foregroundColor(Color.theme.bodyText.opacity(0.45))
+ .foregroundColor(Color.theme.mutedFg)
  }
  }
  }
@@ -887,31 +889,31 @@
  var body: some View {
  HStack(spacing: 8) {
  Circle()
- .fill(result.mrlExceeded ? Color.theme.error : (result.measuredValue != nil ? .orange : .green))
+ .fill(result.mrlExceeded ? Color.theme.error : (result.measuredValue != nil ? Color.theme.warning : Color.theme.success))
  .frame(width: 7, height: 7)
  VStack(alignment: .leading, spacing: 2) {
  Text(result.substanceName)
  .font(.subheadline)
- .foregroundColor(Color.theme.bodyText)
+ .foregroundColor(Color.theme.cardFg)
  Text(result.category.rawValue.replacingOccurrences(of: "_", with: " ").capitalized)
  .font(.caption2)
- .foregroundColor(Color.theme.bodyText.opacity(0.45))
+ .foregroundColor(Color.theme.mutedFg)
  }
  Spacer()
  VStack(alignment: .trailing, spacing: 2) {
  if let v = result.measuredValue {
  Text("\(String(format: "%.4f", v)) \(result.unit)")
  .font(.caption.weight(.semibold))
- .foregroundColor(result.mrlExceeded ? Color.theme.error : Color.theme.bodyText)
+ .foregroundColor(result.mrlExceeded ? Color.theme.error : Color.theme.cardFg)
  } else {
  Text("n.d.")
  .font(.caption.weight(.semibold))
- .foregroundColor(.green)
+ .foregroundColor(Color.theme.success)
  }
  if let mrl = result.mrlValue {
  Text("MRL: \(String(format: "%.4f", mrl)) \(result.unit)")
  .font(.caption2)
- .foregroundColor(Color.theme.bodyText.opacity(0.4))
+ .foregroundColor(Color.theme.mutedFg.opacity(0.5))
  }
  }
  }
@@ -924,17 +926,17 @@
  var body: some View {
  HStack(spacing: 8) {
  Image(systemName: result.detected ? "exclamationmark.triangle.fill" : "checkmark.circle.fill")
- .foregroundColor(result.detected ? Color.theme.warning : .green)
+ .foregroundColor(result.detected ? Color.theme.warning : Color.theme.success)
  .font(.caption)
  VStack(alignment: .leading, spacing: 2) {
  Text(result.allergen)
  .font(.subheadline)
- .foregroundColor(Color.theme.bodyText)
+ .foregroundColor(Color.theme.cardFg)
  HStack(spacing: 6) {
  Text(result.method.rawValue.uppercased())
  .font(.caption2)
- .foregroundColor(Color.theme.bodyText.opacity(0.45))
- if result.isEuMajorAllergen { Text("EU-Hauptallergen").font(.caption2).foregroundColor(.orange) }
+ .foregroundColor(Color.theme.mutedFg)
+ if result.isEuMajorAllergen { Text("EU-Hauptallergen").font(.caption2).foregroundColor(Color.theme.warning) }
  }
  }
  Spacer()
@@ -942,11 +944,11 @@
  if let v = result.measuredMgPerKg {
  Text("\(String(format: "%.0f", v)) mg/kg")
  .font(.caption.weight(.semibold))
- .foregroundColor(Color.theme.bodyText)
+ .foregroundColor(Color.theme.cardFg)
  }
  Text(result.declarationOnLabelCorrect ? "Dekl. korrekt ✓" : "⚠ Deklaration prüfen")
  .font(.caption2)
- .foregroundColor(result.declarationOnLabelCorrect ? .green : Color.theme.error)
+ .foregroundColor(result.declarationOnLabelCorrect ? Color.theme.success : Color.theme.error)
  }
  }
  .padding(.horizontal, 16).padding(.vertical, 10)
@@ -966,7 +968,7 @@
  VStack(spacing: 0) {
  content()
  }
- .background(Color.theme.oatMilk)
+ .background(Color.theme.cardBg)
  .cornerRadius(14)
  }
  }
@@ -979,10 +981,10 @@
  HStack(spacing: 6) {
  Image(systemName: icon)
  .font(.caption)
- .foregroundColor(Color.theme.bodyText.opacity(0.45))
+ .foregroundColor(Color.theme.mutedFg)
  Text(title.uppercased())
  .font(.caption.weight(.semibold))
- .foregroundColor(Color.theme.bodyText.opacity(0.5))
+ .foregroundColor(Color.theme.mutedFg)
  .tracking(0.5)
  }
  }
@@ -991,17 +993,20 @@
  struct InfoDetailRow: View {
  let label: String
  let value: String
- var valueColor: Color = Color.theme.bodyText
+ var valueColor: Color = Color.theme.cardFg
  var body: some View {
  HStack(spacing: 8) {
  Text(label)
  .font(.subheadline)
- .foregroundColor(Color.theme.bodyText.opacity(0.6))
- Spacer()
+ .foregroundColor(Color.theme.cardFg.opacity(0.6))
+ .layoutPriority(1)
+ Spacer(minLength: 4)
  Text(value)
  .font(.subheadline)
  .foregroundColor(valueColor)
  .multilineTextAlignment(.trailing)
+ .lineLimit(3)
+ .fixedSize(horizontal: false, vertical: true)
  }
  .padding(.horizontal, 16).padding(.vertical, 11)
  }
@@ -1011,23 +1016,26 @@
  let label: String
  let value: String
  var icon: String? = nil
- var valueColor: Color = Color.theme.bodyText
+ var valueColor: Color = Color.theme.cardFg
  var body: some View {
  HStack(spacing: 8) {
  if let icon = icon {
  Image(systemName: icon)
  .font(.caption)
- .foregroundColor(Color.theme.bodyText.opacity(0.4))
+ .foregroundColor(Color.theme.mutedFg.opacity(0.5))
  .frame(width: 16)
  }
  Text(label)
  .font(.subheadline)
- .foregroundColor(Color.theme.bodyText.opacity(0.6))
- Spacer()
+ .foregroundColor(Color.theme.cardFg.opacity(0.6))
+ .layoutPriority(1)
+ Spacer(minLength: 4)
  Text(value)
  .font(.subheadline)
  .foregroundColor(valueColor)
  .multilineTextAlignment(.trailing)
+ .lineLimit(3)
+ .fixedSize(horizontal: false, vertical: true)
  }
  .padding(.horizontal, 16).padding(.vertical, 11)
  }
@@ -1039,18 +1047,18 @@
  HStack(spacing: 8) {
  Image(systemName: "location.fill")
  .font(.caption)
- .foregroundColor(Color.theme.bodyText.opacity(0.4))
+ .foregroundColor(Color.theme.mutedFg.opacity(0.5))
  .frame(width: 16)
  Text("Standort")
  .font(.subheadline)
- .foregroundColor(Color.theme.bodyText.opacity(0.6))
+ .foregroundColor(Color.theme.cardFg.opacity(0.6))
  Spacer()
  VStack(alignment: .trailing, spacing: 1) {
- if let name = location.name { Text(name).font(.caption).foregroundColor(Color.theme.bodyText) }
+ if let name = location.name { Text(name).font(.caption).foregroundColor(Color.theme.cardFg).lineLimit(1) }
  let parts = [location.city, location.region, location.country.flatMap { Locale.current.localizedString(forRegionCode: $0) }].compactMap { $0 }
- if !parts.isEmpty { Text(parts.joined(separator: ", ")).font(.caption2).foregroundColor(Color.theme.bodyText.opacity(0.5)) }
- if let emb = location.embCode { Text("EMB: \(emb)").font(.caption2).foregroundColor(Color.theme.bodyText.opacity(0.4)) }
- if let gln = location.gln { Text("GLN: \(gln)").font(.caption2).foregroundColor(Color.theme.bodyText.opacity(0.35)) }
+ if !parts.isEmpty { Text(parts.joined(separator: ", ")).font(.caption2).foregroundColor(Color.theme.mutedFg).lineLimit(1) }
+ if let emb = location.embCode { Text("EMB: \(emb)").font(.caption2).foregroundColor(Color.theme.mutedFg.opacity(0.5)).lineLimit(1) }
+ if let gln = location.gln { Text("GLN: \(gln)").font(.caption2).foregroundColor(Color.theme.mutedFg.opacity(0.4)).lineLimit(1) }
  }
  }
  .padding(.horizontal, 16).padding(.vertical, 11)

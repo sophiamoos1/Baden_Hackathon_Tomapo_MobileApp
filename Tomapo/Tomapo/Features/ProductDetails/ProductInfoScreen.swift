@@ -13,7 +13,7 @@ struct ProductInfoScreen: View {
 
     var body: some View {
         ZStack(alignment: .top) {
-            Color.theme.warmPearl.ignoresSafeArea()
+            Color.theme.baseBg.ignoresSafeArea()
             ScrollView(showsIndicators: false) {
                 VStack(alignment: .leading, spacing: 20) {
                     Color.clear.frame(height: 60)
@@ -60,32 +60,32 @@ private struct EnvironmentSection: View {
                 Divider()
                 LazyVGrid(columns: [GridItem(.flexible()), GridItem(.flexible())], spacing: 8) {
                     if let water = env.waterFootprintLiterPerKg {
-                        EnvMetricCard(icon: "drop.fill", label: "Wasserverbrauch", value: "\(Int(water)) L/kg", color: .blue)
+                        EnvMetricCard(icon: "drop.fill", label: "Wasserverbrauch", value: "\(Int(water)) L/kg", color: Color.theme.infso)
                     }
                     if let forest = env.forestFootprintM2PerKg {
-                        EnvMetricCard(icon: "tree.fill", label: "Wald-Fussabdruck", value: String(format: "%.2f m²/kg", forest), color: .green)
+                        EnvMetricCard(icon: "tree.fill", label: "Wald-Fussabdruck", value: String(format: "%.2f m²/kg", forest), color: Color.theme.success)
                     }
                     if let dist = env.totalTransportDistanceKm {
-                        EnvMetricCard(icon: "location.fill", label: "Transportweg", value: "\(Int(dist)) km", color: Color.theme.bodyText)
+                        EnvMetricCard(icon: "location.fill", label: "Transportweg", value: "\(Int(dist)) km", color: Color.theme.cardFg)
                     }
                     if let recycle = env.recyclablePackagingPercent {
-                        EnvMetricCard(icon: "arrow.3.trianglepath", label: "Recyclebar", value: "\(Int(recycle))%", color: .green)
+                        EnvMetricCard(icon: "arrow.3.trianglepath", label: "Recyclebar", value: "\(Int(recycle))%", color: Color.theme.success)
                     }
                 }
                 if let risk = env.threatenedSpeciesRisk, let exp = risk.explanation {
                     HStack(alignment: .top, spacing: 8) {
                         Image(systemName: "exclamationmark.triangle.fill").foregroundColor(Color.theme.warning).font(.caption)
                         VStack(alignment: .leading, spacing: 2) {
-                            Text("Artenbedrohungsrisiko").font(.caption.weight(.semibold)).foregroundColor(Color.theme.bodyText)
-                            Text(exp).font(.caption2).foregroundColor(Color.theme.bodyText.opacity(0.65)).fixedSize(horizontal: false, vertical: true)
+                            Text("Artenbedrohungsrisiko").font(.caption.weight(.semibold)).foregroundColor(Color.theme.cardFg)
+                            Text(exp).font(.caption2).foregroundColor(Color.theme.mutedFg).fixedSize(horizontal: false, vertical: true)
                         }
                     }
                     .padding(10).background(Color.theme.warning.opacity(0.08)).cornerRadius(10)
                 }
                 if !certs.isEmpty {
                     VStack(alignment: .leading, spacing: 6) {
-                        Text("Zertifikate").font(.caption).foregroundColor(Color.theme.bodyText.opacity(0.55))
-                        FlexTagCloud(tags: certs.filter(\.isCurrentlyValid).map(\.name), color: .green)
+                        Text("Zertifikate").font(.caption).foregroundColor(Color.theme.mutedFg)
+                        FlexTagCloud(tags: certs.filter(\.isCurrentlyValid).map(\.name), color: Color.theme.success)
                     }
                 }
             }
@@ -98,21 +98,21 @@ private struct CO2BarView: View {
     let phases: CO2ByPhase
     private var phaseData: [(String, Double, Color)] {
         let rows: [(String, Double, Color)] = [
-            ("Landwirtschaft", phases.agriculture ?? 0, Color.green.opacity(0.8)),
-            ("Verarbeitung",   phases.processing ?? 0,  Color.orange.opacity(0.8)),
-            ("Transport",      phases.transportation ?? 0, Color.blue.opacity(0.8)),
-            ("Verpackung",     phases.packaging ?? 0,   Color.purple.opacity(0.7)),
-            ("Distribution",   phases.distribution ?? 0, Color.pink.opacity(0.7))
+            ("Landwirtschaft", phases.agriculture ?? 0, Color.theme.success),
+            ("Verarbeitung",   phases.processing ?? 0,  Color.theme.warning),
+            ("Transport",      phases.transportation ?? 0, Color.theme.infso),
+            ("Verpackung",     phases.packaging ?? 0,   Color.theme.chartMutedPlumEarth),
+            ("Distribution",   phases.distribution ?? 0, Color.theme.chartTerracottaRose)
         ]
         return rows.filter { $0.1 > 0 }
     }
     var body: some View {
         VStack(alignment: .leading, spacing: 8) {
             HStack {
-                Text("CO₂ Fussabdruck").font(.caption.weight(.semibold)).foregroundColor(Color.theme.bodyText)
+                Text("CO₂ Fussabdruck").font(.caption.weight(.semibold)).foregroundColor(Color.theme.cardFg)
                 Spacer()
                 let lbl = total < 1 ? String(format: "%.2f", total) : String(format: "%.1f", total)
-                Text("\(lbl) kg CO₂eq/kg").font(.caption.weight(.bold)).foregroundColor(total < 1 ? .green : total < 3 ? .orange : .red)
+                Text("\(lbl) kg CO₂eq/kg").font(.caption.weight(.bold)).foregroundColor(total < 1 ? Color.theme.success : total < 3 ? Color.theme.warning : Color.theme.error)
             }
             GeometryReader { geo in
                 HStack(spacing: 2) {
@@ -126,7 +126,7 @@ private struct CO2BarView: View {
                 ForEach(phaseData, id: \.0) { name, val, color in
                     HStack(spacing: 4) {
                         Circle().fill(color).frame(width: 7, height: 7)
-                        Text("\(name): \(String(format: "%.2f", val))kg").font(.caption2).foregroundColor(Color.theme.bodyText.opacity(0.65))
+                        Text("\(name): \(String(format: "%.2f", val))kg").font(.caption2).foregroundColor(Color.theme.mutedFg)
                     }
                 }
             }
@@ -140,12 +140,12 @@ private struct EnvMetricCard: View {
         HStack(spacing: 8) {
             Image(systemName: icon).font(.caption).foregroundColor(color).frame(width: 16)
             VStack(alignment: .leading, spacing: 1) {
-                Text(label).font(.caption2).foregroundColor(Color.theme.bodyText.opacity(0.55))
-                Text(value).font(.caption.weight(.semibold)).foregroundColor(Color.theme.bodyText)
+                Text(label).font(.caption2).foregroundColor(Color.theme.mutedFg)
+                Text(value).font(.caption.weight(.semibold)).foregroundColor(Color.theme.cardFg)
             }
             Spacer()
         }
-        .padding(10).background(Color.theme.oatMilk).cornerRadius(10)
+        .padding(10).background(Color.theme.cardBg).cornerRadius(10)
     }
 }
 
@@ -161,13 +161,13 @@ private struct CertificationsDetailSection: View {
                         HStack {
                             VStack(alignment: .leading, spacing: 3) {
                                 HStack(spacing: 6) {
-                                    Text(cert.name).font(.subheadline.weight(.semibold)).foregroundColor(Color.theme.bodyText)
+                                    Text(cert.name).font(.subheadline.weight(.semibold)).foregroundColor(Color.theme.cardFg)
                                     if cert.isCurrentlyValid {
-                                        Image(systemName: "checkmark.seal.fill").font(.caption2).foregroundColor(.green)
+                                        Image(systemName: "checkmark.seal.fill").font(.caption2).foregroundColor(Color.theme.success)
                                     }
                                 }
                                 if let body = cert.issuingBody {
-                                    Text(body).font(.caption2).foregroundColor(Color.theme.bodyText.opacity(0.5))
+                                    Text(body).font(.caption2).foregroundColor(Color.theme.mutedFg)
                                 }
                             }
                             Spacer()
@@ -175,7 +175,7 @@ private struct CertificationsDetailSection: View {
                                 Text(cert.scope.rawValue.capitalized).font(.caption2).foregroundColor(Color.theme.infso)
                                     .padding(.horizontal, 7).padding(.vertical, 2).background(Color.theme.infso.opacity(0.1)).cornerRadius(8)
                                 if let until = cert.validUntil {
-                                    Text("bis \(until.formatted(.dateTime.day().month(.abbreviated).year()))").font(.caption2).foregroundColor(Color.theme.bodyText.opacity(0.4))
+                                    Text("bis \(until.formatted(.dateTime.day().month(.abbreviated).year()))").font(.caption2).foregroundColor(Color.theme.mutedFg.opacity(0.5))
                                 }
                             }
                         }
@@ -184,7 +184,7 @@ private struct CertificationsDetailSection: View {
                     }
                 }
             }
-            .background(Color.theme.oatMilk).cornerRadius(12)
+            .background(Color.theme.cardBg).cornerRadius(12)
         }
     }
 }
@@ -220,7 +220,7 @@ private struct OriginSection: View {
                     InfoRow(label: "Produktion", value: "Bio-zertifiziert (EU-Öko-VO)")
                 }
             }
-            .background(Color.theme.oatMilk).cornerRadius(12)
+            .background(Color.theme.cardBg).cornerRadius(12)
         }
     }
 }
@@ -238,17 +238,17 @@ private struct PackagingSection: View {
                 ForEach(Array(packagings.enumerated()), id: \.offset) { i, pkg in
                     HStack(spacing: 10) {
                         VStack(alignment: .leading, spacing: 2) {
-                            Text(fmt(pkg.shape)).font(.subheadline).foregroundColor(Color.theme.bodyText)
-                            Text(fmt(pkg.material)).font(.caption).foregroundColor(Color.theme.bodyText.opacity(0.55))
+                            Text(fmt(pkg.shape)).font(.subheadline).foregroundColor(Color.theme.cardFg)
+                            Text(fmt(pkg.material)).font(.caption).foregroundColor(Color.theme.mutedFg)
                         }
                         Spacer()
                         VStack(alignment: .trailing, spacing: 2) {
                             if let r = pkg.recycling {
                                 Text(r.contains("recycle") ? "♻ Recyclebar" : "Nicht recyclebar")
-                                    .font(.caption2).foregroundColor(r.contains("recycle") ? .green : .red)
+                                    .font(.caption2).foregroundColor(r.contains("recycle") ? Color.theme.success : Color.theme.error)
                             }
                             if let w = pkg.weightMeasured {
-                                Text(String(format: "%.1fg", w)).font(.caption2).foregroundColor(Color.theme.bodyText.opacity(0.45))
+                                Text(String(format: "%.1fg", w)).font(.caption2).foregroundColor(Color.theme.mutedFg)
                             }
                         }
                     }
@@ -256,9 +256,9 @@ private struct PackagingSection: View {
                     if i < packagings.count - 1 { Divider().padding(.leading, 16) }
                 }
             }
-            .background(Color.theme.oatMilk).cornerRadius(12)
+            .background(Color.theme.cardBg).cornerRadius(12)
             if let t = text, !t.isEmpty {
-                Text(t).font(.caption).foregroundColor(Color.theme.bodyText.opacity(0.5))
+                Text(t).font(.caption).foregroundColor(Color.theme.mutedFg)
             }
         }
     }
@@ -270,9 +270,9 @@ private struct StorageSection: View {
     let text: String
     var body: some View {
         SheetSection(title: "Lagerung", icon: "thermometer.medium") {
-            Text(text).font(.subheadline).foregroundColor(Color.theme.bodyText.opacity(0.8))
+            Text(text).font(.subheadline).foregroundColor(Color.theme.cardFg.opacity(0.8))
                 .padding(14).frame(maxWidth: .infinity, alignment: .leading)
-                .background(Color.theme.oatMilk).cornerRadius(12)
+                .background(Color.theme.cardBg).cornerRadius(12)
         }
     }
 }
@@ -281,7 +281,7 @@ private struct StorageSection: View {
 
 private struct DataQualitySection: View {
     let product: TomapoResponse
-    private func completenessColor(_ c: Double) -> Color { c >= 0.8 ? .green : c >= 0.5 ? .orange : .red }
+    private func completenessColor(_ c: Double) -> Color { c >= 0.8 ? Color.theme.success : c >= 0.5 ? Color.theme.warning : Color.theme.error }
     var body: some View {
         SheetSection(title: "Datenqualität", icon: "checkmark.shield") {
             VStack(spacing: 0) {
@@ -297,7 +297,7 @@ private struct DataQualitySection: View {
                             valueColor: Color.theme.warning)
                 }
             }
-            .background(Color.theme.oatMilk).cornerRadius(12)
+            .background(Color.theme.cardBg).cornerRadius(12)
         }
     }
 }
@@ -311,9 +311,9 @@ private struct BarcodeSection: View {
         SheetSection(title: "Barcode", icon: "barcode") {
             HStack {
                 VStack(alignment: .leading, spacing: 2) {
-                    Text(product.barcode).font(.system(.subheadline, design: .monospaced)).foregroundColor(Color.theme.bodyText)
+                    Text(product.barcode).font(.system(.subheadline, design: .monospaced)).foregroundColor(Color.theme.cardFg)
                     if let batch = product.batchId {
-                        Text("Charge: \(batch)").font(.caption2).foregroundColor(Color.theme.bodyText.opacity(0.5))
+                        Text("Charge: \(batch)").font(.caption2).foregroundColor(Color.theme.mutedFg)
                     }
                 }
                 Spacer()
@@ -322,10 +322,10 @@ private struct BarcodeSection: View {
                     copied = true
                     DispatchQueue.main.asyncAfter(deadline: .now() + 2) { copied = false }
                 } label: {
-                    Image(systemName: copied ? "checkmark" : "doc.on.doc").font(.subheadline).foregroundColor(Color.theme.bodyText.opacity(0.5))
+                    Image(systemName: copied ? "checkmark" : "doc.on.doc").font(.subheadline).foregroundColor(Color.theme.mutedFg)
                 }
             }
-            .padding(14).background(Color.theme.oatMilk).cornerRadius(12)
+            .padding(14).background(Color.theme.cardBg).cornerRadius(12)
         }
     }
 }

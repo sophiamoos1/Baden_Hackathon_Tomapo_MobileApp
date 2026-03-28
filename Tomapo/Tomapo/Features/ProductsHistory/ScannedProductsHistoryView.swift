@@ -94,9 +94,9 @@ struct ScannedProductsHistoryView: View {
             VStack(alignment: .leading, spacing: 4) {
                 Text("History")
                     .font(.largeTitle).fontWeight(.heavy)
-                    .foregroundColor(Color.theme.importantText)
+                    .foregroundColor(Color.theme.cardFg)
                 Text("\(historyStore.entries.count) gescannte Produkte")
-                    .font(.subheadline).foregroundColor(Color.theme.bodyText)
+                    .font(.subheadline).foregroundColor(Color.theme.cardFg)
             }
             Spacer()
             if !historyStore.entries.isEmpty {
@@ -104,7 +104,7 @@ struct ScannedProductsHistoryView: View {
                     withAnimation { historyStore.clearAll() }
                 } label: {
                     Text("Alles löschen")
-                        .font(.caption).foregroundColor(Color.theme.bodyText.opacity(0.6))
+                        .font(.caption).foregroundColor(Color.theme.mutedFg)
                 }
             }
         }
@@ -134,13 +134,13 @@ struct ScannedProductsHistoryView: View {
  
     private var emptyState: some View {
         VStack(spacing: 16) {
-            Image(systemName: "barcode.viewfinder")
-                .font(.system(size: 52, weight: .ultraLight))
-                .foregroundColor(Color.theme.bodyText.opacity(0.3))
+            Image("IllustrationScan")
+                .resizable().scaledToFit()
+                .frame(width: 140, height: 140)
             Text("Noch nichts gescannt")
-                .font(.headline).foregroundColor(Color.theme.importantText)
+                .font(.headline).foregroundColor(Color.theme.cardFg)
             Text("Scanne ein Produkt um es hier zu sehen.")
-                .font(.subheadline).foregroundColor(Color.theme.bodyText)
+                .font(.subheadline).foregroundColor(Color.theme.cardFg)
                 .multilineTextAlignment(.center)
         }
         .frame(maxWidth: .infinity)
@@ -160,7 +160,7 @@ private struct RecallWarningBanner: View {
                 Text("\(count) Produkt\(count == 1 ? "" : "e") mit aktivem Rückruf")
                     .font(.caption.weight(.bold)).foregroundColor(Color.theme.error)
                 Text("Bitte die betroffenen Produkte nicht verwenden.")
-                    .font(.caption2).foregroundColor(Color.theme.bodyText.opacity(0.7))
+                    .font(.caption2).foregroundColor(Color.theme.mutedFg)
             }
             Spacer()
         }
@@ -195,7 +195,7 @@ private struct CO2Section: View {
         VStack(alignment: .leading, spacing: 12) {
             HStack {
                 VStack(alignment: .leading, spacing: 2) {
-                    Text("CO₂ Fussabdruck").font(.subheadline.weight(.semibold)).foregroundColor(Color.theme.bodyText)
+                    Text("CO₂ Fussabdruck").font(.subheadline.weight(.semibold)).foregroundColor(Color.theme.cardFg)
                     Text(String(format: "%.2f kg CO₂eq", co2Total))
                         .font(.title3.weight(.bold)).foregroundColor(co2Color)
                 }
@@ -212,7 +212,7 @@ private struct CO2Section: View {
  
             if chartData.isEmpty {
                 Text("Keine CO₂-Daten für diesen Zeitraum")
-                    .font(.caption).foregroundColor(Color.theme.bodyText.opacity(0.4))
+                    .font(.caption).foregroundColor(Color.theme.mutedFg)
                     .padding(.vertical, 20).frame(maxWidth: .infinity, alignment: .center)
             } else {
                 // Balkendiagramm
@@ -229,7 +229,7 @@ private struct CO2Section: View {
                 .chartXAxis {
                     AxisMarks(values: .stride(by: .day, count: range == .week ? 1 : 7)) { value in
                         AxisValueLabel(format: range == .week ? .dateTime.weekday(.abbreviated) : .dateTime.day().month(.abbreviated))
-                            .foregroundStyle(Color.theme.bodyText.opacity(0.5))
+                            .foregroundStyle(Color.theme.mutedFg)
                     }
                 }
                 .chartYAxis {
@@ -237,7 +237,7 @@ private struct CO2Section: View {
                         AxisValueLabel {
                             if let v = value.as(Double.self) {
                                 Text(String(format: "%.1f", v)).font(.caption2)
-                                    .foregroundStyle(Color.theme.bodyText.opacity(0.5))
+                                    .foregroundStyle(Color.theme.mutedFg)
                             }
                         }
                     }
@@ -255,12 +255,12 @@ private struct CO2Section: View {
             }
         }
         .padding(16)
-        .background(Color.theme.oatMilk.opacity(0.85))
+        .background(Color.theme.cardBg)
         .cornerRadius(16)
     }
  
     private var co2Color: Color {
-        co2Total < 5 ? .green : co2Total < 15 ? .orange : .red
+        co2Total < 5 ? Color.theme.success : co2Total < 15 ? Color.theme.warning : Color.theme.error
     }
 }
  
@@ -268,8 +268,8 @@ private struct StatItem: View {
     let label: String; let value: String
     var body: some View {
         VStack(alignment: .leading, spacing: 2) {
-            Text(value).font(.subheadline.weight(.bold)).foregroundColor(Color.theme.bodyText)
-            Text(label).font(.caption2).foregroundColor(Color.theme.bodyText.opacity(0.5))
+            Text(value).font(.subheadline.weight(.bold)).foregroundColor(Color.theme.cardFg)
+            Text(label).font(.caption2).foregroundColor(Color.theme.mutedFg)
         }
     }
 }

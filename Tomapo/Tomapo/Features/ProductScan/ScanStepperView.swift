@@ -198,7 +198,7 @@ private struct ScanLineView: View {
 
     var body: some View {
         Rectangle()
-            .fill(Color.theme.accentTerracotta.opacity(0.85))
+            .fill(Color.theme.accentFg.opacity(0.85))
             .frame(width: width, height: 2)
             .clipShape(Capsule())
             .offset(y: offset)

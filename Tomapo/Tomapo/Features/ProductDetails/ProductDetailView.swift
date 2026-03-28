@@ -18,7 +18,7 @@ struct ProductDetailView: View {
  
     var body: some View {
         ZStack(alignment: .top) {
-            Color.theme.warmPearl.ignoresSafeArea()
+            Color.theme.baseBg.ignoresSafeArea()
  
             switch vm.state {
             case .idle, .loading:
@@ -70,9 +70,14 @@ struct ProductDetailView: View {
  
                     // Nährwerte
                     if let n = product.nutriments, product.hasReliableNutritionData {
-                        DetailNutritionSection(nutriments: n, product: product)
+                        NutritionCardView(nutriments: n, servingSize: product.servingSize)
                     }
- 
+
+                    // Kühlkette
+                    if product.requiresColdChain {
+                        ColdChainCardView(summary: product.coldChainSummary, stations: product.stations)
+                    }
+
                     // Meldung erfassen (nur wenn canSubmitReport)
                     if entry.canSubmitReport {
                         SubmitAlertPrompt(product: product)
@@ -95,9 +100,9 @@ struct ProductDetailView: View {
     private var loadingView: some View {
         VStack(spacing: 20) {
             Color.clear.frame(height: 60)
-            ProgressView().scaleEffect(1.3).tint(Color.theme.mutedSage)
+            ProgressView().scaleEffect(1.3).tint(Color.theme.accentFg)
             Text("Produktdaten werden geladen…")
-                .font(.subheadline).foregroundColor(Color.theme.bodyText.opacity(0.6))
+                .font(.subheadline).foregroundColor(Color.theme.mutedFg)
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
     }
@@ -106,19 +111,19 @@ struct ProductDetailView: View {
         VStack(spacing: 16) {
             Color.clear.frame(height: 60)
             Image(systemName: "magnifyingglass")
-                .font(.system(size: 44)).foregroundColor(Color.theme.bodyText.opacity(0.3))
-            Text("Produkt nicht gefunden").font(.headline).foregroundColor(Color.theme.bodyText)
-            Text(entry.barcode).font(.caption).foregroundColor(Color.theme.bodyText.opacity(0.5))
+                .font(.system(size: 44)).foregroundColor(Color.theme.mutedFg.opacity(0.35))
+            Text("Produkt nicht gefunden").font(.headline).foregroundColor(Color.theme.cardFg)
+            Text(entry.barcode).font(.caption).foregroundColor(Color.theme.mutedFg)
         }.frame(maxWidth: .infinity, maxHeight: .infinity)
     }
  
     private func errorView(_ error: TomapoApiError) -> some View {
         VStack(spacing: 12) {
             Color.clear.frame(height: 60)
-            Image(systemName: "wifi.slash").font(.system(size: 40)).foregroundColor(Color.theme.bodyText.opacity(0.4))
-            Text("Ladefehler").font(.headline).foregroundColor(Color.theme.bodyText)
+            Image(systemName: "wifi.slash").font(.system(size: 40)).foregroundColor(Color.theme.mutedFg.opacity(0.5))
+            Text("Ladefehler").font(.headline).foregroundColor(Color.theme.cardFg)
             Text(error.localizedDescription ?? "Unbekannter Fehler")
-                .font(.caption).foregroundColor(Color.theme.bodyText.opacity(0.5))
+                .font(.caption).foregroundColor(Color.theme.mutedFg)
                 .multilineTextAlignment(.center).padding(.horizontal)
             Button("Nochmal versuchen") {
                 Task { await vm.load(entry: entry, store: historyStore) }
@@ -171,24 +176,24 @@ private struct ProductDetailHero: View {
     var body: some View {
         HStack(alignment: .top, spacing: 14) {
             RoundedRectangle(cornerRadius: 14)
-                .fill(Color.theme.warmPearl)
+                .fill(Color.theme.baseBg)
                 .frame(width: 80, height: 80)
                 .overlay(
                     Image(systemName: categoryIcon)
                         .font(.system(size: 28))
-                        .foregroundColor(Color.theme.bodyText.opacity(0.3))
+                        .foregroundColor(Color.theme.mutedFg.opacity(0.35))
                 )
  
             VStack(alignment: .leading, spacing: 5) {
                 Text(product.productName ?? "Unbekanntes Produkt")
                     .font(.title3.weight(.bold))
-                    .foregroundColor(Color.theme.bodyText)
+                    .foregroundColor(Color.theme.cardFg)
                     .lineLimit(2)
                 if let brands = product.brands {
-                    Text(brands).font(.subheadline).foregroundColor(Color.theme.bodyText.opacity(0.6))
+                    Text(brands).font(.subheadline).foregroundColor(Color.theme.mutedFg)
                 }
                 if let qty = product.quantity {
-                    Text(qty).font(.caption).foregroundColor(Color.theme.bodyText.opacity(0.45))
+                    Text(qty).font(.caption).foregroundColor(Color.theme.mutedFg)
                 }
                 // Traceability pill
                 HStack(spacing: 4) {
@@ -208,7 +213,7 @@ private struct ProductDetailHero: View {
  
     private var pillColor: Color {
         let c = product.traceabilityScore.completeness
-        return c >= 0.8 ? .green : c >= 0.5 ? .orange : .red
+        return c >= 0.8 ? Color.theme.success : c >= 0.5 ? Color.theme.warning : Color.theme.error
     }
  
     private var categoryIcon: String {
@@ -234,7 +239,7 @@ private struct DetailScoreSection: View {
             }
             if let nova = product.novaGroup, product.nova.isKnown {
                 Text("NOVA \(nova) – \(product.nova.label)")
-                    .font(.caption).foregroundColor(Color.theme.bodyText.opacity(0.55))
+                    .font(.caption).foregroundColor(Color.theme.mutedFg)
             }
         }
     }
@@ -250,79 +255,24 @@ private struct DetailScorePill: View {
                     .font(.system(size: (grade?.count ?? 1) > 2 ? 10 : 18, weight: .black))
                     .foregroundColor(textColor)
             }
-            Text(label).font(.caption2).foregroundColor(Color.theme.bodyText.opacity(0.55))
+            Text(label).font(.caption2).foregroundColor(Color.theme.mutedFg)
         }
     }
     private var bgColor: Color {
         switch grade?.lowercased() {
-        case "a": return .green.opacity(0.85); case "b": return Color(red: 0.53, green: 0.77, blue: 0.15)
-        case "c": return .orange.opacity(0.8); case "d": return Color(red: 0.9, green: 0.45, blue: 0.1)
-        case "e": return .red.opacity(0.85);  default:   return Color.theme.oatMilk
+        case "a": return Color.theme.success; case "b": return Color.theme.chartDustyOlive
+        case "c": return Color.theme.warning; case "d": return Color.theme.chartTerracottaRose
+        case "e": return Color.theme.error;   default:  return Color.theme.mutedBg
         }
     }
     private var textColor: Color {
         switch grade?.lowercased() {
-        case "a","b","c","d","e": return .white; default: return Color.theme.bodyText.opacity(0.5)
+        case "a","b","c","d","e": return .white; default: return Color.theme.mutedFg
         }
     }
 }
  
-private struct DetailNutritionSection: View {
-    let nutriments: ProductNutriments; let product: TomapoResponse
-    var body: some View {
-        SheetSection(title: "Nährwerte pro 100g", icon: "fork.knife") {
-            VStack(spacing: 0) {
-                NRow(name: "Energie", value: nutriments.energyKcal100g, unit: "kcal", isHeader: true)
-                Divider().padding(.leading, 16)
-                NRow(name: "Fett", value: nutriments.fat100g, unit: "g", level: product.nutrientLevels?.fat)
-                Divider().padding(.leading, 16)
-                NRow(name: "  davon gesättigt", value: nutriments.saturatedFat100g, unit: "g",
-                     level: product.nutrientLevels?.saturatedFat, isSubRow: true)
-                Divider().padding(.leading, 16)
-                NRow(name: "Kohlenhydrate", value: nutriments.carbohydrates100g, unit: "g")
-                Divider().padding(.leading, 16)
-                NRow(name: "  davon Zucker", value: nutriments.sugars100g, unit: "g",
-                     level: product.nutrientLevels?.sugars, isSubRow: true)
-                Divider().padding(.leading, 16)
-                NRow(name: "Proteine", value: nutriments.proteins100g, unit: "g")
-                Divider().padding(.leading, 16)
-                NRow(name: "Salz", value: nutriments.salt100g, unit: "g",
-                     level: product.nutrientLevels?.salt,
-                     hasSuspicion: nutriments.hasSuspiciousSaltValue)
-            }
-            .background(Color.theme.oatMilk).cornerRadius(12)
-            if let serving = product.servingSize {
-                Text("Portionsgrösse: \(serving)").font(.caption).foregroundColor(Color.theme.bodyText.opacity(0.45))
-            }
-        }
-    }
-}
- 
-private struct NRow: View {
-    let name: String; let value: Double?; let unit: String
-    var level: String? = nil; var isHeader: Bool = false
-    var isSubRow: Bool = false; var hasSuspicion: Bool = false
-    private var trafficDot: Color? {
-        switch level { case "low": return .green; case "moderate": return .orange; case "high": return .red; default: return nil }
-    }
-    var body: some View {
-        HStack(spacing: 8) {
-            if let d = trafficDot { Circle().fill(d).frame(width: 7, height: 7) }
-            Text(name).font(isHeader ? .subheadline.weight(.semibold) : isSubRow ? .caption : .subheadline)
-                .foregroundColor(Color.theme.bodyText.opacity(isSubRow ? 0.65 : 1.0))
-            Spacer()
-            if hasSuspicion { Image(systemName: "exclamationmark.triangle.fill").font(.caption2).foregroundColor(Color.theme.warning) }
-            if let v = value {
-                Text("\(String(format: v >= 10 ? "%.1f" : "%.2f", v)) \(unit)")
-                    .font(isHeader ? .subheadline.weight(.semibold) : .subheadline)
-                    .foregroundColor(hasSuspicion ? Color.theme.warning : Color.theme.bodyText)
-            } else {
-                Text("–").font(.subheadline).foregroundColor(Color.theme.bodyText.opacity(0.35))
-            }
-        }
-        .padding(.horizontal, 16).padding(.vertical, isSubRow ? 8 : 11)
-    }
-}
+
  
 private struct DetailRecallBanner: View {
     let alert: TomapoProductAlert
@@ -331,7 +281,7 @@ private struct DetailRecallBanner: View {
             Image(systemName: "exclamationmark.triangle.fill").foregroundColor(Color.theme.error)
             VStack(alignment: .leading, spacing: 2) {
                 Text(alert.title).font(.caption.weight(.bold)).foregroundColor(Color.theme.error)
-                Text(alert.description).font(.caption2).foregroundColor(Color.theme.bodyText).lineLimit(2)
+                Text(alert.description).font(.caption2).foregroundColor(Color.theme.cardFg).lineLimit(2)
             }
         }
         .padding(12)
@@ -367,16 +317,16 @@ private struct SubmitAlertPrompt: View {
         Button { showSheet = true } label: {
             HStack(spacing: 10) {
                 Image(systemName: "exclamationmark.bubble.fill")
-                    .font(.system(size: 18)).foregroundColor(Color.theme.accentTerracotta)
+                    .font(.system(size: 18)).foregroundColor(Color.theme.accentFg)
                 VStack(alignment: .leading, spacing: 2) {
-                    Text("Meldung erfassen").font(.subheadline.weight(.semibold)).foregroundColor(Color.theme.bodyText)
+                    Text("Meldung erfassen").font(.subheadline.weight(.semibold)).foregroundColor(Color.theme.cardFg)
                     Text("Problem melden: Schimmel, Fremdkörper, Qualitätsmangel…")
-                        .font(.caption2).foregroundColor(Color.theme.bodyText.opacity(0.5))
+                        .font(.caption2).foregroundColor(Color.theme.mutedFg)
                 }
                 Spacer()
-                Image(systemName: "chevron.right").font(.caption2).foregroundColor(Color.theme.bodyText.opacity(0.3))
+                Image(systemName: "chevron.right").font(.caption2).foregroundColor(Color.theme.mutedFg.opacity(0.35))
             }
-            .padding(14).background(Color.theme.oatMilk).cornerRadius(14)
+            .padding(14).background(Color.theme.cardBg).cornerRadius(14)
         }
         .buttonStyle(.plain)
         .sheet(isPresented: $showSheet) {

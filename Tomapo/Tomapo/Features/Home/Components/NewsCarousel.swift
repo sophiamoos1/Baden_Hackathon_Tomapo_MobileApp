@@ -24,7 +24,7 @@ struct NewsCarousel: View {
         CardItem(
             title: "Bio-Zertifikate",
             subtitle: "Alle Zertifikate und ihre Bedeutung erklärt",
-            color: Color.theme.accentTerracotta
+            color: Color.theme.accentFg
         ),
         CardItem(
             title: "Kühlkette prüfen",
@@ -60,5 +60,5 @@ struct NewsCarousel: View {
 
 #Preview {
     NewsCarousel()
-        .background(Color.theme.oatMilk)
+        .background(Color.theme.cardBg)
 }

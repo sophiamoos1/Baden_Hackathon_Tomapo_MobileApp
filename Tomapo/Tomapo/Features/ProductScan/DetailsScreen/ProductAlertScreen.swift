@@ -36,7 +36,7 @@ struct ProductAlertsScreen: View {
 
     var body: some View {
         ZStack(alignment: .top) {
-            Color.theme.warmPearl.ignoresSafeArea()
+            Color.theme.baseBg.ignoresSafeArea()
 
             VStack(spacing: 0) {
                 Color.clear.frame(height: 60 + 60) // BackBar + Filter
@@ -52,8 +52,8 @@ struct ProductAlertsScreen: View {
                         } else {
                             if filteredAlerts.isEmpty {
                                 VStack(spacing: 8) {
-                                    Image(systemName: "line.3.horizontal.decrease").font(.system(size: 32)).foregroundColor(Color.theme.bodyText.opacity(0.2))
-                                    Text("Keine Meldungen in dieser Kategorie").font(.subheadline).foregroundColor(Color.theme.bodyText.opacity(0.5))
+                                    Image(systemName: "line.3.horizontal.decrease").font(.system(size: 32)).foregroundColor(Color.theme.mutedFg.opacity(0.25))
+                                    Text("Keine Meldungen in dieser Kategorie").font(.subheadline).foregroundColor(Color.theme.mutedFg)
                                 }
                                 .frame(maxWidth: .infinity).padding(.top, 40)
                             } else {
@@ -105,13 +105,13 @@ struct ProductAlertsScreen: View {
                         HStack(spacing: 4) {
                             Text(f.rawValue)
                                 .font(.caption.weight(.semibold))
-                                .foregroundColor(filter == f ? .white : Color.theme.bodyText)
+                                .foregroundColor(filter == f ? .white : Color.theme.cardFg)
                             if f == .recalls && product.hasActiveRecall {
                                 Circle().fill(Color.theme.error).frame(width: 6, height: 6)
                             }
                         }
                         .padding(.horizontal, 12).padding(.vertical, 6)
-                        .background(filter == f ? Color.theme.infso : Color.theme.oatMilk)
+                        .background(filter == f ? Color.theme.infso : Color.theme.cardBg)
                         .cornerRadius(20)
                     }
                     .buttonStyle(.plain)
@@ -119,7 +119,7 @@ struct ProductAlertsScreen: View {
             }
             .padding(.horizontal, 16).padding(.vertical, 10)
         }
-        .background(Color.theme.warmPearl)
+        .background(Color.theme.baseBg)
         .overlay(Divider(), alignment: .bottom)
     }
 
@@ -128,21 +128,21 @@ struct ProductAlertsScreen: View {
             showSubmitSheet = true
         } label: {
             HStack(spacing: 10) {
-                Image(systemName: "plus.circle.fill").font(.system(size: 20)).foregroundColor(Color.theme.accentTerracotta)
-                Text("Neue Meldung erfassen").font(.subheadline.weight(.semibold)).foregroundColor(Color.theme.bodyText)
+                Image(systemName: "plus.circle.fill").font(.system(size: 20)).foregroundColor(Color.theme.accentFg)
+                Text("Neue Meldung erfassen").font(.subheadline.weight(.semibold)).foregroundColor(Color.theme.cardFg)
                 Spacer()
-                Image(systemName: "chevron.right").font(.caption2).foregroundColor(Color.theme.bodyText.opacity(0.3))
+                Image(systemName: "chevron.right").font(.caption2).foregroundColor(Color.theme.mutedFg.opacity(0.35))
             }
-            .padding(14).background(Color.theme.oatMilk).cornerRadius(14)
+            .padding(14).background(Color.theme.cardBg).cornerRadius(14)
         }
         .buttonStyle(.plain)
     }
 
     private var emptyState: some View {
         VStack(spacing: 12) {
-            Image(systemName: "checkmark.seal.fill").font(.system(size: 40)).foregroundColor(.green.opacity(0.6))
-            Text("Keine Meldungen").font(.subheadline.weight(.semibold)).foregroundColor(Color.theme.bodyText)
-            Text("Für dieses Produkt liegen keine Meldungen vor.").font(.caption).foregroundColor(Color.theme.bodyText.opacity(0.5)).multilineTextAlignment(.center)
+            Image(systemName: "checkmark.seal.fill").font(.system(size: 40)).foregroundColor(Color.theme.success.opacity(0.6))
+            Text("Keine Meldungen").font(.subheadline.weight(.semibold)).foregroundColor(Color.theme.cardFg)
+            Text("Für dieses Produkt liegen keine Meldungen vor.").font(.caption).foregroundColor(Color.theme.mutedFg).multilineTextAlignment(.center)
         }
         .frame(maxWidth: .infinity).padding(.top, 60).padding(.horizontal, 40)
     }
@@ -163,7 +163,7 @@ private struct AlertCard: View {
                 }
 
                 VStack(alignment: .leading, spacing: 3) {
-                    Text(alert.title).font(.subheadline.weight(.semibold)).foregroundColor(Color.theme.bodyText).lineLimit(2)
+                    Text(alert.title).font(.subheadline.weight(.semibold)).foregroundColor(Color.theme.cardFg).lineLimit(2)
                     HStack(spacing: 6) {
                         SeverityBadge(severity: alert.severity)
                         SourceBadge(source: alert.source)
@@ -173,7 +173,7 @@ private struct AlertCard: View {
                 StatusDot(status: alert.status)
             }
 
-            Text(alert.description).font(.caption).foregroundColor(Color.theme.bodyText.opacity(0.75))
+            Text(alert.description).font(.caption).foregroundColor(Color.theme.mutedFg)
                 .lineLimit(3).fixedSize(horizontal: false, vertical: true)
 
             if let action = alert.actionRequired {
@@ -186,25 +186,25 @@ private struct AlertCard: View {
             // Footer: Autor + Datum + Bestätigungen
             HStack(spacing: 10) {
                 if let avatar = alert.authorAvatarUrl {
-                    AsyncImage(url: URL(string: avatar)) { img in img.resizable().scaledToFill() } placeholder: { Color.theme.oatMilk }
+                    AsyncImage(url: URL(string: avatar)) { img in img.resizable().scaledToFill() } placeholder: { Color.theme.cardBg }
                         .frame(width: 18, height: 18).clipShape(Circle())
                 } else {
                     Image(systemName: alert.isOfficial ? "building.2.fill" : "person.fill")
-                        .font(.caption2).foregroundColor(Color.theme.bodyText.opacity(0.5))
+                        .font(.caption2).foregroundColor(Color.theme.mutedFg)
                 }
-                Text(alert.displayAuthor).font(.caption2).foregroundColor(Color.theme.bodyText.opacity(0.6))
+                Text(alert.displayAuthor).font(.caption2).foregroundColor(Color.theme.mutedFg)
                 Spacer()
                 if alert.confirmationCount > 0 {
                     HStack(spacing: 3) {
-                        Image(systemName: "hand.thumbsup.fill").font(.system(size: 9)).foregroundColor(.green)
-                        Text("\(alert.confirmationCount)").font(.caption2).foregroundColor(.green)
+                        Image(systemName: "hand.thumbsup.fill").font(.system(size: 9)).foregroundColor(Color.theme.success)
+                        Text("\(alert.confirmationCount)").font(.caption2).foregroundColor(Color.theme.success)
                     }
                 }
                 Text(alert.createdAt.formatted(.dateTime.day().month(.abbreviated).year()))
-                    .font(.caption2).foregroundColor(Color.theme.bodyText.opacity(0.4))
+                    .font(.caption2).foregroundColor(Color.theme.mutedFg.opacity(0.5))
             }
         }
-        .padding(14).background(Color.theme.oatMilk).cornerRadius(14)
+        .padding(14).background(Color.theme.cardBg).cornerRadius(14)
         .overlay(RoundedRectangle(cornerRadius: 14).stroke(alert.isRecall ? severityColor.opacity(0.3) : Color.clear, lineWidth: 1))
     }
 
@@ -212,9 +212,9 @@ private struct AlertCard: View {
         switch alert.severity {
         case .critical: return Color.theme.error
         case .high:     return Color.theme.warning
-        case .medium:   return .orange
+        case .medium:   return Color.theme.warning
         case .low:      return Color.theme.infso
-        default:        return Color.theme.bodyText.opacity(0.5)
+        default:        return Color.theme.mutedFg
         }
     }
 
@@ -244,7 +244,7 @@ private struct SeverityBadge: View {
     private var color: Color {
         switch severity {
         case .critical: return Color.theme.error; case .high: return Color.theme.warning
-        case .medium: return .orange; case .low: return Color.theme.infso; default: return Color.theme.bodyText.opacity(0.5)
+        case .medium: return Color.theme.warning; case .low: return Color.theme.infso; default: return Color.theme.mutedFg
         }
     }
 }
@@ -264,8 +264,8 @@ private struct SourceBadge: View {
     }
     private var color: Color {
         switch source {
-        case .ownUser: return .purple; case .official, .government: return .blue
-        case .user, .community: return .orange; case .system: return Color.theme.bodyText.opacity(0.5)
+        case .ownUser: return Color.theme.chartMutedPlumEarth; case .official, .government: return Color.theme.infso
+        case .user, .community: return Color.theme.warning; case .system: return Color.theme.mutedFg
         }
     }
 }
@@ -277,9 +277,9 @@ private struct StatusDot: View {
     }
     private var color: Color {
         switch status {
-        case .active, .verified: return .green
-        case .pending:           return .orange
-        case .rejected, .expired, .resolved: return Color.theme.bodyText.opacity(0.3)
+        case .active, .verified: return Color.theme.success
+        case .pending:           return Color.theme.warning
+        case .rejected, .expired, .resolved: return Color.theme.mutedFg.opacity(0.35)
         }
     }
 }

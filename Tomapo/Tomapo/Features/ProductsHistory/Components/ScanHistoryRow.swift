@@ -20,11 +20,11 @@ struct ScanHistoryRow: View {
                 // MARK: Thumbnail / Icon
                 ZStack {
                     RoundedRectangle(cornerRadius: 10)
-                        .fill(Color.theme.softOliveFog.opacity(0.35))
+                        .fill(Color.theme.mutedBg)
                         .frame(width: 52, height: 52)
                     Image(systemName: "barcode.viewfinder")
                         .font(.system(size: 22, weight: .light))
-                        .foregroundColor(Color.theme.mutedSage)
+                        .foregroundColor(Color.theme.accentFg)
                 }
  
                 // MARK: Text-Inhalt
@@ -32,7 +32,7 @@ struct ScanHistoryRow: View {
                     HStack(spacing: 6) {
                         Text(entry.displayName)
                             .font(.subheadline.weight(.semibold))
-                            .foregroundColor(Color.theme.importantText)
+                            .foregroundColor(Color.theme.cardFg)
                             .lineLimit(1)
                         // Status Badge
                         if entry.productStatus != .ok && entry.productStatus != .unknown {
@@ -43,7 +43,7 @@ struct ScanHistoryRow: View {
                     if let subtitle = entry.displaySubtitle {
                         Text(subtitle)
                             .font(.caption)
-                            .foregroundColor(Color.theme.bodyText)
+                            .foregroundColor(Color.theme.cardFg)
                             .lineLimit(1)
                     }
  
@@ -59,10 +59,10 @@ struct ScanHistoryRow: View {
                             HStack(spacing: 3) {
                                 Image(systemName: "leaf.fill")
                                     .font(.system(size: 9))
-                                    .foregroundColor(.green.opacity(0.7))
+                                    .foregroundColor(Color.theme.success.opacity(0.7))
                                 Text(String(format: "%.2f kg", co2))
                                     .font(.caption2)
-                                    .foregroundColor(Color.theme.bodyText.opacity(0.6))
+                                    .foregroundColor(Color.theme.mutedFg)
                             }
                         }
                     }
@@ -74,21 +74,21 @@ struct ScanHistoryRow: View {
                 VStack(alignment: .trailing, spacing: 2) {
                     Text(entry.scannedAt, style: .date)
                         .font(.caption2)
-                        .foregroundColor(Color.theme.bodyText.opacity(0.6))
+                        .foregroundColor(Color.theme.mutedFg)
                     Text(entry.scannedAt, style: .time)
                         .font(.caption2)
-                        .foregroundColor(Color.theme.bodyText.opacity(0.4))
+                        .foregroundColor(Color.theme.mutedFg)
                     if onTap != nil {
                         Image(systemName: "chevron.right")
                             .font(.caption2)
-                            .foregroundColor(Color.theme.bodyText.opacity(0.25))
+                            .foregroundColor(Color.theme.mutedFg.opacity(0.3))
                             .padding(.top, 4)
                     }
                 }
             }
             .padding(.horizontal, 16)
             .padding(.vertical, 12)
-            .background(Color.theme.oatMilk.opacity(0.85))
+            .background(Color.theme.cardBg)
             .clipShape(RoundedRectangle(cornerRadius: 14))
         }
         .buttonStyle(.plain)
@@ -115,7 +115,7 @@ private struct StatusBadge: View {
         switch status.uiSeverity {
         case .error:   return Color.theme.error
         case .warning: return Color.theme.warning
-        default:       return Color.theme.bodyText.opacity(0.4)
+        default:       return Color.theme.mutedFg
         }
     }
  
@@ -150,13 +150,13 @@ private struct ScoreChip: View {
  
     private var color: Color {
         switch grade.lowercased() {
-        case "a":              return .green
-        case "b":              return Color(red: 0.53, green: 0.77, blue: 0.15)
-        case "c":              return .orange
-        case "d":              return Color(red: 0.9, green: 0.45, blue: 0.1)
-        case "e":              return .red
-        case "not-applicable": return Color.theme.bodyText.opacity(0.4)
-        default:               return Color.theme.bodyText.opacity(0.4)
+        case "a":              return Color.theme.success
+        case "b":              return Color.theme.chartDustyOlive
+        case "c":              return Color.theme.warning
+        case "d":              return Color.theme.chartTerracottaRose
+        case "e":              return Color.theme.error
+        case "not-applicable": return Color.theme.mutedFg
+        default:               return Color.theme.mutedFg
         }
     }
 }
@@ -187,5 +187,5 @@ private struct ScoreChip: View {
         ), onTap: {})
     }
     .padding()
-    .background(Color.theme.oatMilk)
+    .background(Color.theme.cardBg)
 }
