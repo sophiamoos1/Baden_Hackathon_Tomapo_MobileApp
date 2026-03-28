@@ -11,6 +11,7 @@ internal import SwiftUI
  
 struct ScanResultSheetView: View {
     let result: ScanResult
+    var batchID: String? = nil
     @Environment(\.dismiss) private var dismiss
     @StateObject private var vm = ScanResultViewModel()
     @EnvironmentObject private var historyStore: ScanHistoryStore
@@ -37,7 +38,7 @@ struct ScanResultSheetView: View {
                 }
             }
         }
-        .task { await vm.loadProduct(barcode: result.value, barcodeType: result.type, store: historyStore) }
+        .task { await vm.loadProduct(barcode: result.value, barcodeType: result.type, batchId: batchID, store: historyStore) }
     }
  
     @ViewBuilder
@@ -46,7 +47,7 @@ struct ScanResultSheetView: View {
         case .idle, .loading: loadingView
         case .notFound:        notFoundView
         case .error(let e):    errorView(e)
-        case .loaded(let p):   ProductSheetContent(product: p)
+        case .loaded(let p):   ProductSheetContent(product: p, barcode: result.value, batchID: batchID)
         }
     }
  
@@ -69,7 +70,7 @@ struct ScanResultSheetView: View {
         VStack(spacing: 12) {
             Image(systemName: "wifi.slash").font(.system(size: 40)).foregroundColor(Color.theme.bodyText.opacity(0.4))
             Text("Ladefehler").font(.headline).foregroundColor(Color.theme.bodyText)
-            Text(error.localizedDescription ?? "Unbekannter Fehler")
+            Text(error.localizedDescription)
                 .font(.caption).foregroundColor(Color.theme.bodyText.opacity(0.5))
                 .multilineTextAlignment(.center).padding(.horizontal)
         }.frame(maxWidth: .infinity, maxHeight: .infinity)
@@ -80,11 +81,13 @@ struct ScanResultSheetView: View {
  
 private struct ProductSheetContent: View {
     let product: TomapoResponse
+    var barcode: String? = nil
+    var batchID: String? = nil
  
     var body: some View {
         ScrollView(showsIndicators: false) {
             VStack(alignment: .leading, spacing: 0) {
-                ProductHeroHeader(product: product).padding(.bottom, 8)
+                ProductHeroHeader(product: product, barcode: barcode, batchID: batchID).padding(.bottom, 8)
  
                 // Rückruf-Banner
                 if let recall = product.officialRecalls.first {
@@ -115,6 +118,8 @@ private struct ProductSheetContent: View {
  
 private struct ProductHeroHeader: View {
     let product: TomapoResponse
+    var barcode: String? = nil
+    var batchID: String? = nil
  
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
@@ -142,6 +147,37 @@ private struct ProductHeroHeader: View {
                 Spacer()
             }
             .padding(.horizontal, 16).padding(.top, 16)
+
+            // Barcode + Batch ID Info
+            if barcode != nil || batchID != nil {
+                HStack(spacing: 12) {
+                    if let barcode {
+                        HStack(spacing: 4) {
+                            Image(systemName: "barcode")
+                                .font(.caption2)
+                                .foregroundColor(Color.theme.bodyText.opacity(0.45))
+                            Text(barcode)
+                                .font(.system(size: 12, design: .monospaced))
+                                .foregroundColor(Color.theme.bodyText.opacity(0.6))
+                        }
+                    }
+                    if let batchID {
+                        HStack(spacing: 4) {
+                            Image(systemName: "number")
+                                .font(.caption2)
+                                .foregroundColor(Color.theme.bodyText.opacity(0.45))
+                            Text(batchID)
+                                .font(.system(size: 12, weight: .medium, design: .monospaced))
+                                .foregroundColor(Color.theme.bodyText.opacity(0.6))
+                        }
+                        .padding(.horizontal, 8)
+                        .padding(.vertical, 3)
+                        .background(Color.theme.bodyText.opacity(0.06))
+                        .cornerRadius(6)
+                    }
+                }
+                .padding(.horizontal, 16)
+            }
         }
     }
  

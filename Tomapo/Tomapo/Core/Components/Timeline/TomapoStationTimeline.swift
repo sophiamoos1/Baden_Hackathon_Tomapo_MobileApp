@@ -8,26 +8,47 @@
 internal import SwiftUI
 internal import PhosphorSwift
 
-// MARK: - Timeline Hauptview
+// MARK: - Timeline Main View
 
 struct TomapoStationTimeline: View {
     let stations: [TomapoStation]
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 0) {
-            ForEach(Array(stations.enumerated()), id: \.element.id) { index, station in
-                TomapoStationRow(
-                    station: station,
-                    isLast: index == stations.count - 1
-                )
+        VStack(alignment: .leading, spacing: 14) {
+            // Section header
+            HStack(spacing: 8) {
+                Text("Productionchain")
+                    .font(.system(size: 15, weight: .semibold))
+                    .foregroundColor(Color.theme.cardFg)
+                Spacer()
+                Text("\(stations.count) Stations")
+                    .font(.system(size: 11, weight: .medium))
+                    .foregroundColor(Color.theme.mutedFg)
+                    .padding(.horizontal, 10)
+                    .padding(.vertical, 4)
+                    .background(Color.theme.mutedBg)
+                    .clipShape(Capsule())
+            }
+
+            // Timeline rows
+            VStack(alignment: .leading, spacing: 0) {
+                ForEach(Array(stations.enumerated()), id: \.element.id) { index, station in
+                    StationTimelineRow(
+                        station: station,
+                        isLast: index == stations.count - 1
+                    )
+                }
             }
         }
+        .padding(16)
+        .background(Color.theme.cardBg)
+        .cornerRadius(16)
     }
 }
 
 // MARK: - Station Row
 
-struct TomapoStationRow: View {
+private struct StationTimelineRow: View {
     let station: TomapoStation
     let isLast: Bool
 
@@ -35,141 +56,111 @@ struct TomapoStationRow: View {
 
     var body: some View {
         HStack(alignment: .top, spacing: 12) {
-
-            // ── Linke Spalte: Linie + Badge ─────────────────────────
+            // Left column: Icon box + connecting line
             VStack(spacing: 0) {
                 ZStack {
-                    Circle()
-                        .fill(stationStatusColor.opacity(0.15))
-                        .frame(width: 38, height: 38)
-                    Circle()
-                        .strokeBorder(stationStatusColor, lineWidth: 2)
-                        .frame(width: 38, height: 38)
+                    RoundedRectangle(cornerRadius: 14)
+                        .fill(stationStatusColor.opacity(0.12))
+                        .frame(width: 48, height: 48)
                     stationIcon
-                        .frame(width: 20, height: 20)
+                        .frame(width: 22, height: 22)
                         .foregroundColor(stationStatusColor)
                 }
 
                 if !isLast {
                     Rectangle()
-                        .fill(Color.gray.opacity(0.25))
+                        .fill(Color.theme.mutedFg.opacity(0.35))
                         .frame(width: 2)
                         .frame(maxHeight: .infinity)
-                        .padding(.vertical, 3)
+                        .padding(.vertical, 4)
                 }
             }
-            .frame(width: 38)
+            .frame(width: 48)
 
-            // ── Rechte Spalte: Inhalt ──────────────────────────────
-            VStack(alignment: .leading, spacing: 6) {
-
-                // Titel + Status-Dot
-                HStack(spacing: 6) {
+            // Right column: Content card
+            VStack(alignment: .leading, spacing: 8) {
+                // Name + status badge
+                HStack(spacing: 8) {
                     Text(station.title)
-                        .font(.subheadline.weight(.semibold))
-                        .foregroundColor(Color.theme.bodyText)
+                        .font(.system(size: 14, weight: .semibold))
+                        .foregroundColor(Color.theme.cardFg)
                         .lineLimit(2)
-                    Circle()
-                        .fill(stationStatusColor)
-                        .frame(width: 7, height: 7)
                     Spacer()
+                    StationStatusBadge(status: station.status)
                 }
 
-                // Subtitle
-                if let sub = station.subtitle {
-                    Text(sub)
-                        .font(.caption)
-                        .foregroundColor(Color.theme.bodyText.opacity(0.65))
-                        .lineLimit(2)
-                }
-
-                // Datum & Dauer
-                HStack(spacing: 12) {
+                // Meta row: date, duration
+                HStack(spacing: 10) {
                     if let start = station.startedAt {
-                        Label(start.formatted(.dateTime.day().month(.abbreviated).year()),
-                              systemImage: "calendar")
-                            .font(.caption2)
-                            .foregroundColor(Color.theme.bodyText.opacity(0.45))
+                        HStack(spacing: 3) {
+                            Image(systemName: "calendar")
+                                .font(.system(size: 10))
+                            Text(start.formatted(.dateTime.day().month(.abbreviated).year()))
+                                .font(.system(size: 11))
+                        }
+                        .foregroundColor(Color.theme.mutedFg)
                     }
                     if let dur = station.durationHours {
-                        Label(formatDuration(dur), systemImage: "clock")
-                            .font(.caption2)
-                            .foregroundColor(Color.theme.bodyText.opacity(0.45))
+                        HStack(spacing: 3) {
+                            Image(systemName: "clock")
+                                .font(.system(size: 10))
+                            Text(formatDuration(dur))
+                                .font(.system(size: 11))
+                        }
+                        .foregroundColor(Color.theme.mutedFg)
                     }
                 }
 
-                // Standort
+                // Location
                 if let loc = station.location, let country = loc.country {
-                    HStack(spacing: 4) {
+                    HStack(spacing: 3) {
                         Image(systemName: "location.fill")
-                            .font(.caption2)
+                            .font(.system(size: 10))
                         Text([loc.city, loc.region, countryName(country)]
                             .compactMap { $0 }
                             .joined(separator: ", "))
-                            .font(.caption2)
+                            .font(.system(size: 11))
                             .lineLimit(1)
                     }
-                    .foregroundColor(Color.theme.bodyText.opacity(0.45))
+                    .foregroundColor(Color.theme.mutedFg)
                 }
 
-                // CO₂
-                if let co2 = station.co2KgPerKg {
-                    HStack(spacing: 4) {
-                        Image(systemName: "leaf.fill")
-                            .font(.caption2)
-                            .foregroundColor(.green.opacity(0.7))
-                        Text("\(String(format: "%.3f", co2)) kg CO₂/kg")
-                            .font(.caption2)
-                            .foregroundColor(Color.theme.bodyText.opacity(0.45))
+                // Footer: QC pills + Details button
+                HStack(spacing: 6) {
+                    if !station.qualityChecks.isEmpty {
+                        QCPillRow(checks: station.qualityChecks)
+                    }
+                    Spacer()
+                    Button {
+                        navigateToDetail = true
+                    } label: {
+                        HStack(spacing: 3) {
+                            Text("Details")
+                                .font(.system(size: 11, weight: .medium))
+                            Image(systemName: "arrow.right")
+                                .font(.system(size: 9, weight: .semibold))
+                        }
+                        .foregroundColor(Color.theme.mutedFg)
+                        .padding(.horizontal, 10)
+                        .padding(.vertical, 5)
+                        .overlay(
+                            Capsule()
+                                .stroke(Color.theme.border, lineWidth: 1)
+                        )
+                    }
+                    .fullScreenCover(isPresented: $navigateToDetail) {
+                        TomapoStationDetailView(
+                            station: station,
+                            onBack: { navigateToDetail = false }
+                        )
                     }
                 }
-
-                // Qualitätschecks Mini-Badges
-                if !station.qualityChecks.isEmpty {
-                    QualityCheckMiniRow(checks: station.qualityChecks)
-                }
-
-                // Verifiziert
-                if station.isVerified, let by = station.verifiedBy {
-                    HStack(spacing: 4) {
-                        Image(systemName: "checkmark.seal.fill")
-                            .font(.caption2)
-                            .foregroundColor(.green)
-                        Text("Verifiziert: \(by)")
-                            .font(.caption2)
-                            .foregroundColor(.green.opacity(0.8))
-                            .lineLimit(1)
-                    }
-                }
-
-                // Notiz
-                if let notes = station.notes {
-                    Text(notes)
-                        .font(.caption2)
-                        .foregroundColor(Color.theme.bodyText.opacity(0.45))
-                        .lineLimit(2)
-                        .padding(.top, 1)
-                }
             }
-            .padding(.vertical, 6)
-            .padding(.bottom, isLast ? 0 : 18)
-
-            // ── Detail-Button ──────────────────────────────────────
-            Button {
-                navigateToDetail = true
-            } label: {
-                Ph.magnifyingGlass.duotone
-                    .frame(width: 22, height: 22)
-                    .foregroundColor(Color.theme.bodyText.opacity(0.3))
-            }
-            .padding(.top, 6)
-            .fullScreenCover(isPresented: $navigateToDetail) {
-                TomapoStationDetailView(
-                    station: station,
-                    onBack: { navigateToDetail = false }
-                )
-            }
+            .padding(12)
+            .background(Color.theme.mutedBg.opacity(0.5))
+            .cornerRadius(14)
         }
+        .padding(.bottom, isLast ? 0 : 6)
     }
 
     // MARK: Station Icon
@@ -224,9 +215,9 @@ struct TomapoStationRow: View {
         case .warning:    return Color.theme.warning
         case .failed:     return Color.theme.error
         case .active:     return Color.theme.infso
-        case .pending:    return Color.theme.stoneGreenGrey.opacity(0.4)
-        case .skipped:    return Color.theme.stoneGreenGrey.opacity(0.3)
-        case .unknown:    return Color.theme.stoneGreenGrey.opacity(0.35)
+        case .pending:    return Color.theme.mutedFg.opacity(0.4)
+        case .skipped:    return Color.theme.mutedFg.opacity(0.3)
+        case .unknown:    return Color.theme.mutedFg.opacity(0.35)
         }
     }
 
@@ -245,50 +236,87 @@ struct TomapoStationRow: View {
     }
 }
 
-// MARK: - Qualitätschecks Mini-Badges
+// MARK: - Status Badge Pill
 
-private struct QualityCheckMiniRow: View {
+private struct StationStatusBadge: View {
+    let status: TomapoStationStatus
+
+    var body: some View {
+        Text(statusLabel)
+            .font(.system(size: 10, weight: .medium))
+            .foregroundColor(statusColor)
+            .padding(.horizontal, 8)
+            .padding(.vertical, 3)
+            .background(statusColor.opacity(0.12))
+            .clipShape(Capsule())
+    }
+
+    private var statusLabel: String {
+        switch status {
+        case .completed:  return "Abgeschlossen"
+        case .warning:    return "Warnung"
+        case .failed:     return "Fehlgeschlagen"
+        case .active:     return "Aktiv"
+        case .pending:    return "Ausstehend"
+        case .skipped:    return "Übersprungen"
+        case .unknown:    return "Unbekannt"
+        }
+    }
+
+    private var statusColor: Color {
+        switch status {
+        case .completed:  return Color.theme.success
+        case .warning:    return Color.theme.warning
+        case .failed:     return Color.theme.error
+        case .active:     return Color.theme.infso
+        case .pending:    return Color.theme.mutedFg
+        case .skipped:    return Color.theme.mutedFg
+        case .unknown:    return Color.theme.mutedFg
+        }
+    }
+}
+
+// MARK: - Quality Check Pills
+
+private struct QCPillRow: View {
     let checks: [TomapoQualityCheck]
 
     private var passed: Int { checks.filter { $0.status == .passed }.count }
-    private var failed: Int { checks.filter { $0.status == .failed }.count }
     private var warnings: Int { checks.filter { $0.status == .warning }.count }
+    private var failed: Int { checks.filter { $0.status == .failed }.count }
 
     var body: some View {
         HStack(spacing: 6) {
-            Image(systemName: "checklist")
-                .font(.caption2)
-                .foregroundColor(Color.theme.bodyText.opacity(0.45))
-
             if passed > 0 {
-                StatusCountPill(count: passed, color: .green, icon: "checkmark")
+                QCPill(icon: "checkmark", count: passed, color: Color.theme.success)
             }
             if warnings > 0 {
-                StatusCountPill(count: warnings, color: Color.theme.warning, icon: "exclamationmark")
+                QCPill(icon: "exclamationmark.triangle.fill", count: warnings, color: Color.theme.warning)
             }
             if failed > 0 {
-                StatusCountPill(count: failed, color: Color.theme.error, icon: "xmark")
+                QCPill(icon: "xmark", count: failed, color: Color.theme.error)
             }
         }
     }
 }
 
-private struct StatusCountPill: View {
+private struct QCPill: View {
+    let icon: String
     let count: Int
     let color: Color
-    let icon: String
 
     var body: some View {
-        HStack(spacing: 2) {
+        HStack(spacing: 3) {
             Image(systemName: icon)
                 .font(.system(size: 8, weight: .bold))
             Text("\(count)")
                 .font(.system(size: 10, weight: .semibold))
         }
         .foregroundColor(color)
-        .padding(.horizontal, 6).padding(.vertical, 2)
+        .padding(.horizontal, 7)
+        .padding(.vertical, 3)
         .background(color.opacity(0.1))
-        .cornerRadius(20)
+        .clipShape(Capsule())
     }
 }
 
@@ -299,5 +327,5 @@ private struct StatusCountPill: View {
         TomapoStationTimeline(stations: TomapoMockData.trace(for: "4316268651288")?.stations ?? [])
             .padding()
     }
-    .background(Color.theme.oatMilk)
+    .background(Color.theme.baseBg)
 }

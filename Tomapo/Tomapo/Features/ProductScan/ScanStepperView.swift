@@ -7,82 +7,79 @@
 
 internal import SwiftUI
 
-// MARK: - Stepper Pill
+// MARK: - Stepper Pill (Segmented Bar)
 
 struct ScanStepperPill: View {
     let step: ScanStep
 
-    var body: some View {
-        HStack(spacing: 0) {
-            stepItem(
-                number: 1,
-                label: "Barcode",
-                state: step == .barcode ? .active : .done
-            )
-
-            Rectangle()
-                .fill(Color.theme.border)
-                .frame(width: 16, height: 1)
-                .padding(.horizontal, 4)
-
-            stepItem(
-                number: 2,
-                label: "Batch ID",
-                state: step == .batchID ? .active : .inactive
-            )
-        }
-        .padding(.horizontal, 14)
-        .padding(.vertical, 8)
-        .background(
-            RoundedRectangle(cornerRadius: 20)
-                .fill(Color.theme.cardBg)
-                .overlay(
-                    RoundedRectangle(cornerRadius: 20)
-                        .stroke(Color.theme.border, lineWidth: 0.5)
-                )
-        )
-    }
-
-    // MARK: Step state
-
     private enum StepState { case active, done, inactive }
 
+    var body: some View {
+        HStack(spacing: 0) {
+            segment(number: 1, label: "Barcode",
+                    state: step == .barcode ? .active : .done)
+
+            Rectangle()
+                .fill(Color.theme.border.opacity(0.3))
+                .frame(width: 0.5)
+
+            segment(number: 2, label: "Batch ID",
+                    state: step == .batchID ? .active : .inactive)
+        }
+        .fixedSize(horizontal: false, vertical: true)
+        .background(Color.theme.cardBg.opacity(0.92))
+        .clipShape(RoundedRectangle(cornerRadius: 12))
+        .overlay(
+            RoundedRectangle(cornerRadius: 12)
+                .stroke(Color.theme.border, lineWidth: 0.5)
+        )
+        .animation(.easeInOut(duration: 0.3), value: step)
+    }
+
     @ViewBuilder
-    private func stepItem(number: Int, label: String, state: StepState) -> some View {
-        HStack(spacing: 6) {
+    private func segment(number: Int, label: String, state: StepState) -> some View {
+        HStack(spacing: 7) {
+            // Number badge — rounded rectangle (not circle)
             ZStack {
-                Circle()
-                    .fill(circleFill(state))
-                    .frame(width: 22, height: 22)
-                Group {
-                    if state == .done {
-                        Image(systemName: "checkmark")
-                            .font(.system(size: 10, weight: .semibold))
-                    } else {
-                        Text("\(number)")
-                            .font(.system(size: 11, weight: .medium))
-                    }
+                RoundedRectangle(cornerRadius: 6)
+                    .fill(numBg(state))
+                    .frame(width: 20, height: 20)
+                if state == .inactive {
+                    RoundedRectangle(cornerRadius: 6)
+                        .stroke(Color.theme.mutedFg, lineWidth: 0.5)
+                        .frame(width: 20, height: 20)
                 }
-                .foregroundColor(circleFg(state))
+
+                if state == .done {
+                    Image(systemName: "checkmark")
+                        .font(.system(size: 8, weight: .bold))
+                        .foregroundColor(Color.theme.primaryFg)
+                } else {
+                    Text("\(number)")
+                        .font(.system(size: 10, weight: .medium))
+                        .foregroundColor(numFg(state))
+                }
             }
 
             Text(label)
-                .font(.system(size: 11, weight: .medium))
+                .font(.system(size: 10, weight: .medium))
                 .foregroundColor(labelColor(state))
         }
+        .padding(.horizontal, 11)
+        .padding(.vertical, 8)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .background(state == .active ? Color.theme.border.opacity(0.35) : Color.clear)
     }
 
-    // MARK: Color helpers
-
-    private func circleFill(_ state: StepState) -> Color {
+    private func numBg(_ state: StepState) -> Color {
         switch state {
         case .active:   return Color.theme.accentBg
         case .done:     return Color.theme.primaryBg
-        case .inactive: return Color.theme.mutedBg
+        case .inactive: return .clear
         }
     }
 
-    private func circleFg(_ state: StepState) -> Color {
+    private func numFg(_ state: StepState) -> Color {
         switch state {
         case .active:   return Color.theme.accentFg
         case .done:     return Color.theme.primaryFg
@@ -91,47 +88,58 @@ struct ScanStepperPill: View {
     }
 
     private func labelColor(_ state: StepState) -> Color {
-        state == .inactive ? Color.theme.mutedFg : Color.theme.baseFg
+        switch state {
+        case .active:   return Color.theme.baseFg
+        case .done, .inactive: return Color.theme.mutedFg
+        }
     }
 }
 
-// MARK: - Scan Overlay
+// MARK: - Scan Frame Overlay (Dim + Corner Brackets + Scan Line + OCR Text)
 
-struct ScanOverlayView: View {
+struct ScanFrameOverlay: View {
     let step: ScanStep
+    var detectedBatchID: String?
 
     var body: some View {
         GeometryReader { geo in
-            let size = geo.size.width * 0.72
+            let frameSize = geo.size.width * 0.64
+            let frameCenterY = geo.size.height * 0.42
+            let yOffset = frameCenterY - geo.size.height / 2
+
             ZStack {
-                Color.black.opacity(0.45)
+                // Semi-transparent overlay with rounded cutout
+                Color.black.opacity(0.42)
                     .mask(
                         Rectangle()
                             .overlay(
                                 RoundedRectangle(cornerRadius: 16)
-                                    .frame(width: size, height: size)
+                                    .frame(width: frameSize, height: frameSize)
+                                    .offset(y: yOffset)
                                     .blendMode(.destinationOut)
                             )
                     )
 
-                RoundedRectangle(cornerRadius: 16)
-                    .stroke(Color.theme.border.opacity(0.9), lineWidth: 2.5)
-                    .frame(width: size, height: size)
+                // Corner brackets (L-shaped corners)
+                CornerBracketsShape(armLength: 22, cornerRadius: 6)
+                    .stroke(Color.theme.border, style: StrokeStyle(lineWidth: 2.5, lineCap: .round))
+                    .frame(width: frameSize, height: frameSize)
+                    .offset(y: yOffset)
 
+                // Animated scan line (Step 2 only)
                 if step == .batchID {
-                    ScanLineView(width: size * 0.78)
+                    ScanLineView(width: frameSize * 0.86)
+                        .offset(y: yOffset)
                 }
 
-                VStack {
-                    Spacer()
-                        .frame(height: geo.size.height * 0.5 + size * 0.5 + 16)
-                    Text(step == .barcode
-                         ? "QR-Code oder Barcode in den Rahmen halten"
-                         : "Batch ID (L-Nummer) auf der Verpackung scannen")
-                        .font(.footnote)
-                        .foregroundColor(.white.opacity(0.82))
-                        .multilineTextAlignment(.center)
-                        .padding(.horizontal, 32)
+                // OCR detected text inside frame (Step 2)
+                if let batchID = detectedBatchID, step == .batchID {
+                    Text(batchID)
+                        .font(.system(size: 18, weight: .medium, design: .monospaced))
+                        .tracking(3)
+                        .foregroundColor(.white.opacity(0.9))
+                        .offset(y: yOffset)
+                        .transition(.opacity)
                 }
             }
         }
@@ -139,7 +147,50 @@ struct ScanOverlayView: View {
     }
 }
 
-// MARK: - Animated scan line
+// MARK: - Corner Brackets Shape
+
+private struct CornerBracketsShape: Shape {
+    let armLength: CGFloat
+    let cornerRadius: CGFloat
+
+    func path(in rect: CGRect) -> Path {
+        var p = Path()
+        let a = armLength
+        let r = cornerRadius
+
+        // Top-left
+        p.move(to: CGPoint(x: rect.minX, y: rect.minY + a))
+        p.addLine(to: CGPoint(x: rect.minX, y: rect.minY + r))
+        p.addQuadCurve(to: CGPoint(x: rect.minX + r, y: rect.minY),
+                       control: CGPoint(x: rect.minX, y: rect.minY))
+        p.addLine(to: CGPoint(x: rect.minX + a, y: rect.minY))
+
+        // Top-right
+        p.move(to: CGPoint(x: rect.maxX - a, y: rect.minY))
+        p.addLine(to: CGPoint(x: rect.maxX - r, y: rect.minY))
+        p.addQuadCurve(to: CGPoint(x: rect.maxX, y: rect.minY + r),
+                       control: CGPoint(x: rect.maxX, y: rect.minY))
+        p.addLine(to: CGPoint(x: rect.maxX, y: rect.minY + a))
+
+        // Bottom-right
+        p.move(to: CGPoint(x: rect.maxX, y: rect.maxY - a))
+        p.addLine(to: CGPoint(x: rect.maxX, y: rect.maxY - r))
+        p.addQuadCurve(to: CGPoint(x: rect.maxX - r, y: rect.maxY),
+                       control: CGPoint(x: rect.maxX, y: rect.maxY))
+        p.addLine(to: CGPoint(x: rect.maxX - a, y: rect.maxY))
+
+        // Bottom-left
+        p.move(to: CGPoint(x: rect.minX + a, y: rect.maxY))
+        p.addLine(to: CGPoint(x: rect.minX + r, y: rect.maxY))
+        p.addQuadCurve(to: CGPoint(x: rect.minX, y: rect.maxY - r),
+                       control: CGPoint(x: rect.minX, y: rect.maxY))
+        p.addLine(to: CGPoint(x: rect.minX, y: rect.maxY - a))
+
+        return p
+    }
+}
+
+// MARK: - Animated Scan Line
 
 private struct ScanLineView: View {
     let width: CGFloat
@@ -147,8 +198,9 @@ private struct ScanLineView: View {
 
     var body: some View {
         Rectangle()
-            .fill(Color.theme.secondaryBg.opacity(0.88))
+            .fill(Color.theme.accentTerracotta.opacity(0.85))
             .frame(width: width, height: 2)
+            .clipShape(Capsule())
             .offset(y: offset)
             .onAppear {
                 withAnimation(.easeInOut(duration: 1.8).repeatForever(autoreverses: true)) {
@@ -158,65 +210,78 @@ private struct ScanLineView: View {
     }
 }
 
-// MARK: - Batch ID Fallback Bar
+// MARK: - Step Transition Overlay
 
-struct BatchIDFallbackBar: View {
-    @Binding var manualText: String
-    let onConfirm: (String) -> Void
-    let onSkip: () -> Void
+struct StepTransitionOverlay: View {
+    let barcode: String
+    @State private var phase: TransitionPhase = .appearing
+
+    private enum TransitionPhase { case appearing, visible, disappearing }
 
     var body: some View {
-        VStack(spacing: 6) {
-            Text("Batch ID nicht gefunden? Manuell eingeben:")
-                .font(.caption2)
-                .foregroundColor(Color.theme.mutedFg)
-                .multilineTextAlignment(.center)
+        ZStack {
+            Color.black.opacity(overlayOpacity)
+                .ignoresSafeArea()
 
-            HStack(spacing: 8) {
-                TextField("L·····", text: $manualText)
-                    .font(.system(size: 14, weight: .medium, design: .monospaced))
-                    .foregroundColor(Color.theme.baseFg)
-                    .textInputAutocapitalization(.characters)
-                    .autocorrectionDisabled()
-                    .frame(width: 100)
-                    .padding(.horizontal, 12)
-                    .padding(.vertical, 9)
-                    .background(
-                        RoundedRectangle(cornerRadius: 11)
-                            .fill(Color.theme.mutedBg)
-                            .overlay(
-                                RoundedRectangle(cornerRadius: 11)
-                                    .stroke(Color.theme.border, lineWidth: 0.5)
-                            )
-                    )
+            VStack(spacing: 16) {
+                ZStack {
+                    Circle()
+                        .fill(Color.theme.primaryBg)
+                        .frame(width: 64, height: 64)
+                        .scaleEffect(checkScale)
 
-                Button {
-                    onConfirm(manualText)
-                } label: {
-                    Text("Bestätigen")
-                        .font(.system(size: 13, weight: .medium))
-                        .foregroundColor(Color.theme.secondaryFg)
-                        .padding(.horizontal, 16)
-                        .padding(.vertical, 9)
-                        .background(
-                            RoundedRectangle(cornerRadius: 11)
-                                .fill(Color.theme.secondaryBg)
-                        )
+                    Image(systemName: "checkmark")
+                        .font(.system(size: 26, weight: .bold))
+                        .foregroundColor(Color.theme.primaryFg)
+                        .scaleEffect(checkScale)
                 }
-                .disabled(manualText.trimmingCharacters(in: .whitespaces).count < 4)
-            }
 
-            Button("Überspringen") {
-                onSkip()
+                Text(barcode)
+                    .font(.system(size: 15, weight: .semibold, design: .monospaced))
+                    .foregroundColor(.white)
+                    .opacity(textOpacity)
+
+                Text("Weiter mit Batch ID Scan")
+                    .font(.system(size: 13, weight: .medium))
+                    .foregroundColor(.white.opacity(0.7))
+                    .opacity(textOpacity)
             }
-            .font(.caption2)
-            .foregroundColor(Color.theme.mutedFg.opacity(0.6))
-            .padding(.top, 4)
         }
-        .padding(.horizontal, 24)
-        .padding(.top, 12)
-        .padding(.bottom, 28)
-        .background(Color.theme.mutedBg)
+        .onAppear {
+            withAnimation(.spring(response: 0.4, dampingFraction: 0.65)) {
+                phase = .visible
+            }
+            Task { @MainActor in
+                try? await Task.sleep(for: .seconds(1.1))
+                withAnimation(.easeOut(duration: 0.4)) {
+                    phase = .disappearing
+                }
+            }
+        }
+    }
+
+    private var overlayOpacity: Double {
+        switch phase {
+        case .appearing:    return 0.0
+        case .visible:      return 0.65
+        case .disappearing: return 0.0
+        }
+    }
+
+    private var checkScale: CGFloat {
+        switch phase {
+        case .appearing:    return 0.3
+        case .visible:      return 1.0
+        case .disappearing: return 1.1
+        }
+    }
+
+    private var textOpacity: Double {
+        switch phase {
+        case .appearing:    return 0.0
+        case .visible:      return 1.0
+        case .disappearing: return 0.0
+        }
     }
 }
 
@@ -226,11 +291,11 @@ struct BatchIDDetectedBadge: View {
     let batchID: String
 
     var body: some View {
-        HStack(spacing: 4) {
-            Image(systemName: "checkmark.circle.fill")
-                .font(.caption2)
+        HStack(spacing: 6) {
             Text("\(batchID) erkannt")
-                .font(.system(size: 12, weight: .medium))
+                .font(.system(size: 11, weight: .medium))
+            Text("\u{2713}")
+                .font(.system(size: 11, weight: .bold))
         }
         .foregroundColor(Color.theme.primaryFg)
         .padding(.horizontal, 14)
@@ -240,7 +305,7 @@ struct BatchIDDetectedBadge: View {
                 .fill(Color.theme.primaryBg)
                 .overlay(
                     Capsule()
-                        .stroke(Color.theme.primaryFg.opacity(0.25), lineWidth: 0.5)
+                        .stroke(Color.theme.primaryFg.opacity(0.3), lineWidth: 0.5)
                 )
         )
     }

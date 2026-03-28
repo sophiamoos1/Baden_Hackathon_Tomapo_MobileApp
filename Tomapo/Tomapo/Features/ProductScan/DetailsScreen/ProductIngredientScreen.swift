@@ -325,16 +325,8 @@ struct SubProductDetailScreen: View {
  
                         // Stationen
                         if !trace.stations.isEmpty {
-                            VStack(alignment: .leading, spacing: 8) {
-                                HStack(spacing: 6) {
-                                    Image(systemName: "arrow.triangle.branch").font(.caption)
-                                        .foregroundColor(Color.theme.bodyText.opacity(0.5))
-                                    Text("PRODUKTIONSKETTE".uppercased()).font(.caption.weight(.semibold))
-                                        .foregroundColor(Color.theme.bodyText.opacity(0.55)).tracking(0.5)
-                                }
-                                TomapoStationTimeline(stations: trace.stations)
-                            }
-                            .padding(.horizontal, 16)
+                            TomapoStationTimeline(stations: trace.stations)
+                                .padding(.horizontal, 16)
                         }
                     } else {
                         // Keine Trace-Daten

@@ -47,20 +47,20 @@ struct ProfileView: View {
             EditProfileSheet()
                 .environmentObject(userStore)
         }
-        .alert("Scan-History löschen", isPresented: $showDeleteHistoryAlert) {
-            Button("Löschen", role: .destructive) { historyStore.clearAll() }
-            Button("Abbrechen", role: .cancel) {}
+        .alert("Delete Scan-History", isPresented: $showDeleteHistoryAlert) {
+            Button("Delete", role: .destructive) { historyStore.clearAll() }
+            Button("Cancel", role: .cancel) {}
         } message: {
-            Text("Alle \(historyStore.entries.count) gescannten Produkte werden unwiderruflich gelöscht.")
+            Text("All \(historyStore.entries.count) scanned products will be permanently deleted.")
         }
-        .alert("Account löschen", isPresented: $showDeleteAccountAlert) {
-            Button("Account löschen", role: .destructive) {
+        .alert("Delete Account", isPresented: $showDeleteAccountAlert) {
+            Button("Delete Account", role: .destructive) {
                 userStore.deleteUser()
                 historyStore.clearAll()
             }
-            Button("Abbrechen", role: .cancel) {}
+            Button("Cancel", role: .cancel) {}
         } message: {
-            Text("Dein Account und alle lokalen Daten werden gelöscht. Diese Aktion kann nicht rückgängig gemacht werden.")
+            Text("Your account and all locally stored data will be deleted. This action cannot be undone.")
         }
     }
  
@@ -102,9 +102,9 @@ struct ProfileView: View {
                         Text(user.email)
                             .font(.caption).foregroundColor(Color.theme.bodyText.opacity(0.45))
                     } else {
-                        Text("Kein Profil")
+                        Text("No Profile")
                             .font(.title3.weight(.bold)).foregroundColor(Color.theme.bodyText)
-                        Text("Tippe um ein Profil zu erstellen")
+                        Text("Tap to create your Profile")
                             .font(.caption).foregroundColor(Color.theme.bodyText.opacity(0.5))
                     }
                 }
@@ -125,11 +125,11 @@ struct ProfileView: View {
  
     private var settingsSection: some View {
         VStack(alignment: .leading, spacing: 10) {
-            sectionLabel("Einstellungen")
+            sectionLabel("Settings")
             VStack(spacing: 0) {
                 // Dark Mode Toggle
                 HStack {
-                    Label("Dark Mode", systemImage: "moon.fill")
+                    Label("Theme Mode", systemImage: "moon.fill")
                         .font(.subheadline).foregroundColor(Color.theme.bodyText)
                     Spacer()
                     Toggle("", isOn: Binding(
@@ -144,10 +144,10 @@ struct ProfileView: View {
  
                 // Benachrichtigungen (Platzhalter)
                 HStack {
-                    Label("Benachrichtigungen", systemImage: "bell.fill")
+                    Label("Notifications", systemImage: "bell.fill")
                         .font(.subheadline).foregroundColor(Color.theme.bodyText)
                     Spacer()
-                    Text("Bald verfügbar")
+                    Text("Soon available")
                         .font(.caption).foregroundColor(Color.theme.bodyText.opacity(0.4))
                 }
                 .padding(.horizontal, 16).padding(.vertical, 14)
@@ -161,17 +161,17 @@ struct ProfileView: View {
  
     private var statsSection: some View {
         VStack(alignment: .leading, spacing: 10) {
-            sectionLabel("Meine Statistiken")
+            sectionLabel("My Statistics")
             HStack(spacing: 12) {
                 StatCard(
                     value: "\(historyStore.entries.count)",
-                    label: "Gescannte Produkte",
+                    label: "Scanned Products",
                     icon: "barcode.viewfinder",
                     color: Color.theme.mutedSage
                 )
                 StatCard(
                     value: "\(userMessageStore.messages.count)",
-                    label: "Meldungen",
+                    label: "Alerts",
                     icon: "exclamationmark.bubble.fill",
                     color: Color.theme.accentTerracotta
                 )
@@ -197,10 +197,10 @@ struct ProfileView: View {
                     showDeleteHistoryAlert = true
                 } label: {
                     HStack {
-                        Label("Scan-History löschen", systemImage: "trash")
+                        Label("Delete Scan-History", systemImage: "trash")
                             .font(.subheadline).foregroundColor(Color.theme.warning)
                         Spacer()
-                        Text("\(historyStore.entries.count) Einträge")
+                        Text("\(historyStore.entries.count) Entries")
                             .font(.caption).foregroundColor(Color.theme.oatMilk.opacity(0.5))
                         Image(systemName: "chevron.right")
                             .font(.caption2).foregroundColor(Color.theme.bodyText.opacity(0.3))
@@ -272,11 +272,11 @@ private struct EditProfileSheet: View {
     var body: some View {
         NavigationStack {
             Form {
-                Section("Profil") {
+                Section("Profile") {
                     HStack {
                         Text("Name")
                         Spacer()
-                        TextField("Dein Name", text: $fullName)
+                        TextField("Your Name", text: $fullName)
                             .multilineTextAlignment(.trailing)
                             .foregroundColor(Color.theme.bodyText)
                     }
@@ -298,14 +298,14 @@ private struct EditProfileSheet: View {
                     }
                 }
             }
-            .navigationTitle("Profil bearbeiten")
+            .navigationTitle("Edit Profile")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .topBarLeading) {
-                    Button("Abbrechen") { dismiss() }
+                    Button("Cancel") { dismiss() }
                 }
                 ToolbarItem(placement: .topBarTrailing) {
-                    Button("Speichern") {
+                    Button("Save") {
                         if userStore.currentUser == nil {
                             userStore.createUser(
                                 fullName: fullName.isEmpty ? "Anonym" : fullName,

@@ -16,6 +16,7 @@ final class ScanResultViewModel: ObservableObject {
     func loadProduct(
         barcode: String,
         barcodeType: String = "EAN13",
+        batchId: String? = nil,
         store: ScanHistoryStore
     ) async {
         state = .loading
@@ -31,7 +32,7 @@ final class ScanResultViewModel: ObservableObject {
         store.add(
             barcode: barcode,
             barcodeType: barcodeType,
-            batchId: product.batchId,
+            batchId: batchId ?? product.batchId,
             productName: product.productName,
             brand: product.brands,
             imageUrl: product.displayImageUrl,

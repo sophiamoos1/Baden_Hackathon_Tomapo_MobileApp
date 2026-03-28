@@ -7,6 +7,7 @@
 //
 
 internal import AVFoundation
+internal import Combine
 internal import SwiftUI
 internal import Vision
 
@@ -173,11 +174,12 @@ class ScannerViewModel: ObservableObject {
     @Published var permissionState: CameraPermissionState = .notDetermined
     @Published var isTorchOn: Bool = false
     @Published var scanStep: ScanStep = .barcode
+    @Published var showStepTransition: Bool = false  // brief animation overlay between steps
 
     nonisolated(unsafe) let session = AVCaptureSession()
-    nonisolated(unsafe) private let coordinator = ScannerCoordinator()
-    nonisolated(unsafe) private let sessionQueue = DispatchQueue(label: "dev.wheresmytomato.sessionQueue")
-    nonisolated(unsafe) private let videoQueue = DispatchQueue(label: "dev.wheresmytomato.videoQueue")
+    private let coordinator = ScannerCoordinator()
+    private let sessionQueue = DispatchQueue(label: "dev.wheresmytomato.sessionQueue")
+    private let videoQueue = DispatchQueue(label: "dev.wheresmytomato.videoQueue")
     nonisolated(unsafe) private var isConfiguring = false
     nonisolated(unsafe) private var stopRequestedDuringConfig = false
     nonisolated(unsafe) private var isStopped = false
@@ -186,15 +188,21 @@ class ScannerViewModel: ObservableObject {
         coordinator.onCodeScanned = { [weak self] result in
             guard let self else { return }
             self.scanResult = result
-            self.scanStep = .batchID
-            self.coordinator.ocrEnabled = true
             self.pauseBarcodeScanning()
+            // Show transition animation, then switch to Step 2
+            self.showStepTransition = true
+            Task { @MainActor [weak self] in
+                try? await Task.sleep(for: .seconds(1.6))
+                guard let self else { return }
+                self.showStepTransition = false
+                self.scanStep = .batchID
+                self.coordinator.ocrEnabled = true
+            }
         }
         coordinator.onBatchIDDetected = { [weak self] id in
             guard let self else { return }
+            // Only set the ID — user must confirm before sheet opens
             self.batchID = id
-            self.coordinator.ocrEnabled = false
-            self.showSheet = true
         }
     }
 
@@ -230,18 +238,23 @@ class ScannerViewModel: ObservableObject {
         resumeBarcodeScanning()
     }
 
-    /// Fallback: user typed batch ID manually
-    func confirmManualBatchID(_ id: String) {
+    /// Confirm the current batch ID (from OCR or manual) and open the sheet
+    func confirmBatchID() {
+        coordinator.ocrEnabled = false
+        showSheet = true
+    }
+
+    /// Fallback: user typed batch ID manually — store it but don't open sheet yet
+    func setManualBatchID(_ id: String) {
         let trimmed = id.trimmingCharacters(in: .whitespaces).uppercased()
         guard trimmed.count >= 4 else { return }
         batchID = trimmed
-        coordinator.ocrEnabled = false
-        showSheet = true
     }
 
     /// Skip batch ID step and show sheet with barcode only
     func skipBatchID() {
         coordinator.ocrEnabled = false
+        batchID = nil
         showSheet = true
     }
 

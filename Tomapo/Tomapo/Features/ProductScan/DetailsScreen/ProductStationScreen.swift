@@ -32,18 +32,8 @@ struct ProductStationsScreen: View {
                     if product.stations.isEmpty {
                         emptyState
                     } else {
-                        VStack(alignment: .leading, spacing: 8) {
-                            HStack(spacing: 6) {
-                                Image(systemName: "arrow.triangle.branch").font(.caption).foregroundColor(Color.theme.bodyText.opacity(0.5))
-                                Text("\(product.stations.count) STATIONEN".uppercased())
-                                    .font(.caption.weight(.semibold))
-                                    .foregroundColor(Color.theme.bodyText.opacity(0.55)).tracking(0.5)
-                            }
+                        TomapoStationTimeline(stations: product.stations)
                             .padding(.horizontal, 16)
- 
-                            TomapoStationTimeline(stations: product.stations)
-                                .padding(.horizontal, 16)
-                        }
                     }
  
                     // Datenquellen

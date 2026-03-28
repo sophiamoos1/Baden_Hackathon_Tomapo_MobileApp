@@ -76,14 +76,14 @@ private struct BottomBarButton<Icon: View>: View {
                 icon
                     .frame(width: 20, height: 20)
                     .foregroundColor(
-                        isActive ? Color.theme.bodyText : Color.theme.oatMilk
+                        isActive ? Color.theme.navPrimaryFg : Color.theme.navFg
                     )
  
                 if isActive {
                     Text(text)
                         .font(.subheadline)
                         .fontWeight(.medium)
-                        .foregroundColor(Color.theme.bodyText)
+                        .foregroundColor(Color.theme.navPrimaryFg)
                         .lineLimit(1)
                         .fixedSize()
                         .transition(.opacity.combined(with: .scale(scale: 0.85, anchor: .leading)))
@@ -93,8 +93,8 @@ private struct BottomBarButton<Icon: View>: View {
             .padding(.vertical, 8)
             .background(
                 isActive
-                    ? Color.theme.softOliveFog.cornerRadius(30)
-                    : Color.clear.cornerRadius(30)
+                    ? Color.theme.navPrimaryBg.cornerRadius(30)
+                : Color.theme.navBg.cornerRadius(30)
             )
             // Aktiver Tab: so breit wie nötig (Icon + Text + Padding)
             // Inaktiver Tab: nur Icon-Breite, kein maxWidth: .infinity
@@ -113,5 +113,5 @@ private struct BottomBarButton<Icon: View>: View {
         Spacer()
         BottomBar(selectedTab: .constant(.messages))
     }
-    .background(Color.theme.oatMilk)
+    .background(Color.theme.navBg)
 }
