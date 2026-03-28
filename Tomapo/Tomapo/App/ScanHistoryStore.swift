@@ -219,6 +219,32 @@ final class ScanHistoryStore: ObservableObject {
         entries.filter { $0.productStatus == .mhdExpired || $0.productStatus == .mhdSoonExpiring }
     }
 
+    // MARK: - Mock Data Fallback
+
+    /// Seeds the store with mock scan history entries when backend is unreachable.
+    /// Only populates if the store is currently empty.
+    func seedWithMockData() {
+        guard entries.isEmpty else { return }
+        for trace in MockTraces.all {
+            let entry = ScanHistoryEntry(
+                barcode: trace.barcode,
+                barcodeType: "EAN13",
+                batchId: trace.batchId,
+                productName: trace.productName,
+                brand: trace.brands,
+                imageUrl: trace.displayImageUrl,
+                nutriscoreGrade: trace.nutriscoreGrade,
+                ecoscoreGrade: trace.ecoscoreGrade,
+                co2KgPerKg: trace.environmentSummary.co2TotalKgPerKg,
+                productStatus: trace.hasActiveRecall ? .recallActive : .ok,
+                scannedAt: trace.generatedAt
+            )
+            entries.append(entry)
+        }
+        entries.sort { $0.scannedAt > $1.scannedAt }
+        save()
+    }
+
     // MARK: - Persistence
 
     private func save() {

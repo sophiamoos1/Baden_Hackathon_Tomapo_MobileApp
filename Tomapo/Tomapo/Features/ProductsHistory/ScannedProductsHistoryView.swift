@@ -103,7 +103,8 @@ struct ScannedProductsHistoryView: View {
                 historyStore.mergeServerEntries(serverEntries)
             }
         } catch {
-            // Silent — local store is the fallback
+            // Backend unreachable — seed with mock data if store is empty
+            historyStore.seedWithMockData()
         }
     }
 

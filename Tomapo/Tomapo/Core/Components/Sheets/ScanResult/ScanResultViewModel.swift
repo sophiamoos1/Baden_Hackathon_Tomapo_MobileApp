@@ -97,10 +97,17 @@ final class ScanResultViewModel: ObservableObject {
             // Network/other error — try mock
         }
 
-        // Fallback to mock data
+        // Fallback to mock data — try new MockTraces first, then legacy TomapoMockData
         loadingMessage = "Loading from cache..."
-        let demoBarcode = TomapoMockData.trace(for: barcode) != nil ? barcode : "4316268651288"
-        guard let product = TomapoMockData.trace(for: demoBarcode) else {
+        let product: TomapoResponse
+        if let mockTrace = MockTraces.find(barcode: barcode) {
+            product = mockTrace
+        } else if let legacyTrace = TomapoMockData.trace(for: barcode) {
+            product = legacyTrace
+        } else if let firstMock = MockTraces.all.first {
+            // No matching barcode — show a demo product
+            product = firstMock
+        } else {
             state = .notFound
             return
         }
