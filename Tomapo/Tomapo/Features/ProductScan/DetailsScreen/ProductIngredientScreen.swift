@@ -16,8 +16,6 @@ struct ProductIngredientsScreen: View {
             Color.theme.baseBg.ignoresSafeArea()
             ScrollView(showsIndicators: false) {
                 VStack(alignment: .leading, spacing: 20) {
-                    Color.clear.frame(height: 60)
- 
                     // Diät + Badges
                     DietSummarySection(product: product).padding(.horizontal, 16)
  
@@ -46,7 +44,7 @@ struct ProductIngredientsScreen: View {
             }
         }
         .safeAreaInset(edge: .top, spacing: 0) {
-            BackNavigationBar(title: "Inhaltsstoffe", onBack: onBack)
+            BackNavigationBar(title: "Ingredients", onBack: onBack)
         }
     }
 }
@@ -56,20 +54,20 @@ struct ProductIngredientsScreen: View {
 private struct DietSummarySection: View {
     let product: TomapoResponse
     var body: some View {
-        SheetSection(title: "Diät & Kennzeichnung", icon: "leaf.fill") {
+        SheetSection(title: "Diet & Labeling", icon: "leaf.fill") {
             VStack(alignment: .leading, spacing: 10) {
                 HStack(spacing: 8) {
                     DietBadge(label: "Vegan", status: product.veganStatus)
-                    if product.isGlutenFree   { PillBadge(label: "Glutenfrei", color: Color.theme.infso) }
-                    if product.containsPalmOil { PillBadge(label: "Palmöl", color: Color.theme.warning) }
-                    if product.isOrganic       { PillBadge(label: "Bio", color: Color.theme.success) }
+                    if product.isGlutenFree   { PillBadge(label: "Gluten Free", color: Color.theme.infso) }
+                    if product.containsPalmOil { PillBadge(label: "Palm Oil", color: Color.theme.warning) }
+                    if product.isOrganic       { PillBadge(label: "Organic", color: Color.theme.success) }
                     Spacer()
                 }
                 if let n = product.additivesN, n > 0 {
                     HStack(spacing: 6) {
                         Image(systemName: "flask.fill").font(.caption2)
                             .foregroundColor(n > 5 ? Color.theme.warning : Color.theme.infso)
-                        Text("\(n) Zusatzstoffe (E-Nummern)")
+                        Text("\(n) Additives (E-numbers)")
                             .font(.caption).foregroundColor(n > 5 ? Color.theme.warning : Color.theme.mutedFg)
                     }
                 }
@@ -89,11 +87,11 @@ private struct AllergenSection: View {
         tag.replacingOccurrences(of: "en:", with: "").replacingOccurrences(of: "-", with: " ").capitalized
     }
     var body: some View {
-        SheetSection(title: "Allergene & Spuren", icon: "exclamationmark.shield.fill") {
+        SheetSection(title: "Allergens & Traces", icon: "exclamationmark.shield.fill") {
             VStack(alignment: .leading, spacing: 10) {
                 FlexTagCloud(tags: allergens.map { format($0) }, color: Color.theme.error)
                 if !traces.isEmpty {
-                    Text("Kann Spuren enthalten").font(.caption2).foregroundColor(Color.theme.mutedFg)
+                    Text("May contain traces").font(.caption2).foregroundColor(Color.theme.mutedFg)
                     FlexTagCloud(tags: traces.map { format($0) }, color: Color.theme.warning)
                 }
             }
@@ -108,7 +106,7 @@ private struct StructuredIngredientsSection: View {
     @State private var selectedSubProduct: SubProductIngredient? = nil
  
     var body: some View {
-        SheetSection(title: "Zutaten (angereichert)", icon: "list.bullet.rectangle") {
+        SheetSection(title: "Ingredients (enriched)", icon: "list.bullet.rectangle") {
             VStack(spacing: 8) {
                 ForEach(ingredients) { ingredient in
                     switch ingredient {
@@ -216,12 +214,12 @@ private struct ChemicalIngredientRow: View {
                             .fixedSize(horizontal: false, vertical: true)
                     }
                     HStack(spacing: 16) {
-                        LabelValue(label: "Funktion", value: chemical.function_.rawValue.replacingOccurrences(of: "_", with: " ").capitalized)
-                        LabelValue(label: "Herkunft", value: chemical.origin.rawValue.replacingOccurrences(of: "_", with: " ").capitalized)
+                        LabelValue(label: "Function", value: chemical.function_.rawValue.replacingOccurrences(of: "_", with: " ").capitalized)
+                        LabelValue(label: "Origin", value: chemical.origin.rawValue.replacingOccurrences(of: "_", with: " ").capitalized)
                         LabelValue(label: "EU-Status", value: chemical.euRegulatoryStatus.rawValue.replacingOccurrences(of: "_", with: " ").capitalized)
                     }
                     if let adi = chemical.acceptableDailyIntakeKgBw {
-                        LabelValue(label: "ADI", value: "\(adi) mg/kg KG/Tag")
+                        LabelValue(label: "ADI", value: "\(adi) mg/kg BW/day")
                     }
                     if let notes = chemical.healthNotes {
                         Text(notes).font(.caption2).foregroundColor(Color.theme.mutedFg)
@@ -229,7 +227,7 @@ private struct ChemicalIngredientRow: View {
                     }
                     if !chemical.sensitiveGroups.isEmpty {
                         HStack(spacing: 4) {
-                            Text("Vorsicht:").font(.caption2.weight(.semibold)).foregroundColor(Color.theme.warning)
+                            Text("Caution:").font(.caption2.weight(.semibold)).foregroundColor(Color.theme.warning)
                                 .layoutPriority(1)
                             Text(chemical.sensitiveGroups.joined(separator: ", ")).font(.caption2).foregroundColor(Color.theme.warning)
                                 .lineLimit(2)
@@ -260,12 +258,12 @@ private struct HealthAssessmentBadge: View {
     }
     private var label: String {
         switch assessment {
-        case .safe, .generallyRecognizedSafe: return "Unbedenklich"
-        case .caution:                        return "Vorsicht"
-        case .controversial:                  return "Umstritten"
+        case .safe, .generallyRecognizedSafe: return "Safe"
+        case .caution:                        return "Caution"
+        case .controversial:                  return "Controversial"
         case .sensitiveOnly:                  return "Sensitive"
-        case .avoid:                          return "Meiden"
-        default:                              return "Unbekannt"
+        case .avoid:                          return "Avoid"
+        default:                              return "Unknown"
         }
     }
     private var color: Color {
@@ -285,13 +283,13 @@ private struct RawIngredientsSection: View {
     @State private var expanded = false
  
     var body: some View {
-        SheetSection(title: "Zutatenliste (\(count))", icon: "doc.text") {
+        SheetSection(title: "Ingredient List (\(count))", icon: "doc.text") {
             VStack(alignment: .leading, spacing: 8) {
                 Text(text)
                     .font(.caption).foregroundColor(Color.theme.mutedFg)
                     .lineLimit(expanded ? nil : 4)
                     .animation(.easeInOut(duration: 0.2), value: expanded)
-                Button(expanded ? "Weniger anzeigen" : "Vollständige Liste anzeigen") {
+                Button(expanded ? "Show less" : "Show full list") {
                     expanded.toggle()
                 }
                 .font(.caption.weight(.semibold)).foregroundColor(Color.theme.infso)
@@ -311,8 +309,6 @@ struct SubProductDetailScreen: View {
             Color.theme.baseBg.ignoresSafeArea()
             ScrollView(showsIndicators: false) {
                 VStack(alignment: .leading, spacing: 20) {
-                    Color.clear.frame(height: 60)
- 
                     // Hero
                     subProductHero.padding(.horizontal, 16)
  
@@ -325,7 +321,7 @@ struct SubProductDetailScreen: View {
                         EnvironmentSummarySection(env: trace.environmentSummary, certs: trace.certifications)
                             .padding(.horizontal, 16)
  
-                        // Stationen
+                        // S 
                         if !trace.stations.isEmpty {
                             TomapoStationTimeline(stations: trace.stations)
                                 .padding(.horizontal, 16)
@@ -373,8 +369,8 @@ struct SubProductDetailScreen: View {
     private var noTraceView: some View {
         VStack(spacing: 10) {
             Image(systemName: "questionmark.circle").font(.system(size: 36)).foregroundColor(Color.theme.mutedFg.opacity(0.35))
-            Text("Keine Rückverfolgungsdaten").font(.subheadline).foregroundColor(Color.theme.mutedFg)
-            Text("Für diese Zutat sind keine Lieferkettendaten verfügbar.")
+            Text("No Traceability Data").font(.subheadline).foregroundColor(Color.theme.mutedFg)
+            Text("No supply chain data available for this ingredient.")
                 .font(.caption).foregroundColor(Color.theme.mutedFg)
                 .multilineTextAlignment(.center)
         }
@@ -387,7 +383,7 @@ struct SubProductDetailScreen: View {
 private struct ScoreTripletSection: View {
     let product: TomapoResponse
     var body: some View {
-        SheetSection(title: "Bewertungen", icon: "chart.bar.fill") {
+        SheetSection(title: "Scores", icon: "chart.bar.fill") {
             HStack(spacing: 12) {
                 ScorePillSimple(label: "Nutri", grade: product.nutriscoreGrade)
                 ScorePillSimple(label: "Eco",   grade: product.ecoscoreGrade)
@@ -426,7 +422,7 @@ private struct ScorePillSimple: View {
 private struct EnvironmentSummarySection: View {
     let env: TomapoEnvironmentSummary; let certs: [TomapoCertification]
     var body: some View {
-        SheetSection(title: "Umwelt", icon: "leaf.fill") {
+        SheetSection(title: "Environment", icon: "leaf.fill") {
             VStack(spacing: 8) {
                 if let total = env.co2TotalKgPerKg {
                     HStack {
@@ -439,7 +435,7 @@ private struct EnvironmentSummarySection: View {
                 if let water = env.waterFootprintLiterPerKg {
                     HStack {
                         Image(systemName: "drop.fill").foregroundColor(Color.theme.infso).font(.caption)
-                        Text("Wasser: \(Int(water)) L/kg").font(.caption).foregroundColor(Color.theme.mutedFg)
+                        Text("Water: \(Int(water)) L/kg").font(.caption).foregroundColor(Color.theme.mutedFg)
                         Spacer()
                     }
                 }
@@ -451,7 +447,7 @@ private struct EnvironmentSummarySection: View {
 private struct CertificationsSection: View {
     let certifications: [TomapoCertification]
     var body: some View {
-        SheetSection(title: "Zertifikate", icon: "checkmark.seal.fill") {
+        SheetSection(title: "Certificates", icon: "checkmark.seal.fill") {
             FlexTagCloud(tags: certifications.map { $0.name }, color: Color.theme.success)
         }
     }

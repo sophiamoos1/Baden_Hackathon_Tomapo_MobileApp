@@ -241,7 +241,7 @@ struct StepTransitionOverlay: View {
                     .foregroundColor(.white)
                     .opacity(textOpacity)
 
-                Text("Weiter mit Batch ID Scan")
+                Text("Continue with Batch ID Scan")
                     .font(.system(size: 13, weight: .medium))
                     .foregroundColor(.white.opacity(0.7))
                     .opacity(textOpacity)
@@ -292,7 +292,7 @@ struct BatchIDDetectedBadge: View {
 
     var body: some View {
         HStack(spacing: 6) {
-            Text("\(batchID) erkannt")
+            Text("\(batchID) detected")
                 .font(.system(size: 11, weight: .medium))
             Text("\u{2713}")
                 .font(.system(size: 11, weight: .bold))

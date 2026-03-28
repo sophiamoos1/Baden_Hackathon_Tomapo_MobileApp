@@ -38,12 +38,12 @@ struct ColdChainCardView: View {
         VStack(alignment: .leading, spacing: 0) {
             // Header
             HStack {
-                Text("Kühlkette")
+                Text("Cold Chain")
                     .font(.system(size: 14, weight: .medium))
                     .foregroundColor(Color.theme.cardFg)
                 Spacer()
                 if summary.hadColdChainBreak {
-                    Text("\(summary.coldChainBreakCount) Warnung\(summary.coldChainBreakCount == 1 ? "" : "en")")
+                    Text("\(summary.coldChainBreakCount) Warning\(summary.coldChainBreakCount == 1 ? "" : "s")")
                         .font(.system(size: 10, weight: .medium))
                         .foregroundColor(Color.theme.warning)
                         .padding(.horizontal, 9)
@@ -51,7 +51,7 @@ struct ColdChainCardView: View {
                         .background(Color.theme.warning.opacity(0.13))
                         .clipShape(Capsule())
                 } else {
-                    Text("Intakt")
+                    Text("Intact")
                         .font(.system(size: 10, weight: .medium))
                         .foregroundColor(Color.theme.success)
                         .padding(.horizontal, 9)
@@ -69,19 +69,19 @@ struct ColdChainCardView: View {
             // Summary stats
             HStack(spacing: 8) {
                 SummaryStatBox(
-                    label: "Ø Temperatur",
+                    label: "Avg. Temp.",
                     value: avgTemp.map { String(format: "%.1f°C", $0) } ?? "–",
-                    subtitle: avgTempOk ? "im Bereich" : "erhöht",
+                    subtitle: avgTempOk ? "in range" : "elevated",
                     valueColor: avgTempOk ? Color.theme.success : Color.theme.error
                 )
                 SummaryStatBox(
                     label: "Max. Temp.",
                     value: summary.highestTemperatureCelsius.map { String(format: "%.1f°C", $0) } ?? "–",
-                    subtitle: peakTempExceeded ? "überschritten" : "im Bereich",
+                    subtitle: peakTempExceeded ? "exceeded" : "in range",
                     valueColor: peakTempExceeded ? Color.theme.error : Color.theme.success
                 )
                 SummaryStatBox(
-                    label: "Unterbrech.",
+                    label: "Interruptions",
                     value: "\(summary.coldChainBreakCount)",
                     subtitle: breakDurationText,
                     valueColor: summary.hadColdChainBreak ? Color.theme.warning : Color.theme.success
@@ -122,7 +122,7 @@ struct ColdChainCardView: View {
 
     private var breakDurationText: String {
         guard let mins = summary.totalBreakDurationMinutes, mins > 0 else {
-            return summary.hadColdChainBreak ? "unbekannt" : "keine"
+            return summary.hadColdChainBreak ? "unknown" : "none"
         }
         if mins < 60 { return "\(mins) Min." }
         let h = mins / 60
@@ -259,13 +259,13 @@ private struct MiniTempChart: View {
 
     private func shortStationLabel(_ station: TomapoStation) -> String {
         switch station.type {
-        case .coldStorage, .frozenStorage: return "Lager"
+        case .coldStorage, .frozenStorage: return "Storage"
         case .truckTransport, .refrigeratedTruck, .localDelivery: return "Transport"
-        case .railTransport: return "Bahn"
-        case .shipTransport: return "Schiff"
-        case .airTransport: return "Luft"
-        case .retailStorage, .retailDisplay, .pointOfSale: return "Handel"
-        case .distribution: return "Verteilung"
+        case .railTransport: return "Rail"
+        case .shipTransport: return "Ship"
+        case .airTransport: return "Air"
+        case .retailStorage, .retailDisplay, .pointOfSale: return "Retail"
+        case .distribution: return "Distribution"
         default: return station.location?.city ?? "Station"
         }
     }
@@ -356,7 +356,7 @@ private struct ColdChainStationRow: View {
         if let dur = station.durationHours {
             parts.append(formatDuration(dur))
         } else if station.status == .active {
-            parts.append("laufend")
+            parts.append("ongoing")
         }
         return parts.joined(separator: " · ")
     }
@@ -375,7 +375,7 @@ private struct ColdChainStationRow: View {
 
             // Body
             VStack(alignment: .leading, spacing: 2) {
-                Text(isBreak ? "Kettenunterbrechung" : station.title)
+                Text(isBreak ? "Chain Interruption" : station.title)
                     .font(.system(size: 12, weight: .medium))
                     .foregroundColor(isBreak ? Color.theme.error : Color.theme.cardFg)
                     .lineLimit(1)
@@ -413,9 +413,9 @@ private struct ColdChainStationRow: View {
     }
 
     private func formatDuration(_ hours: Double) -> String {
-        if hours < 1 { return "\(Int(hours * 60)) Min." }
+        if hours < 1 { return "\(Int(hours * 60)) min" }
         if hours < 24 { return "\(Int(hours))h" }
         let days = Int(hours / 24)
-        return "\(days) Tage"
+        return "\(days) days"
     }
 }

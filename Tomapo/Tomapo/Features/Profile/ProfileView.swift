@@ -6,39 +6,42 @@
 //
 
 internal import SwiftUI
- 
+
 struct ProfileView: View {
     @Binding var selectedTab: BottomBarSelectedTab
     @EnvironmentObject var themeManager: ThemeManager
     @EnvironmentObject private var userStore: TomapoUserStore
     @EnvironmentObject private var historyStore: ScanHistoryStore
     @EnvironmentObject private var userMessageStore: TomapoUserMessageStore
- 
+
     @State private var showEditProfile = false
     @State private var showDeleteHistoryAlert = false
     @State private var showDeleteAccountAlert = false
- 
+    @State private var isLoadingProfile = false
+
+    private var api: TomapoAPIService { .shared }
+
     var body: some View {
         ScrollView(showsIndicators: false) {
             VStack(alignment: .leading, spacing: 0) {
- 
+
                 // Header
                 header
                     .padding(.horizontal, 20).padding(.top, 16).padding(.bottom, 24)
- 
+
                 // User Card
                 userCard
                     .padding(.horizontal, 16).padding(.bottom, 20)
- 
-                // Einstellungen
+
+                // Settings
                 settingsSection
                     .padding(.horizontal, 16).padding(.bottom, 20)
- 
-                // Statistiken
+
+                // Statistics
                 statsSection
                     .padding(.horizontal, 16).padding(.bottom, 20)
- 
-                // Gefahrenzone
+
+                // Danger Zone
                 dangerSection
                     .padding(.horizontal, 16).padding(.bottom, 40)
             }
@@ -47,33 +50,56 @@ struct ProfileView: View {
             EditProfileSheet()
                 .environmentObject(userStore)
         }
-        .alert("Delete Scan-History", isPresented: $showDeleteHistoryAlert) {
-            Button("Delete", role: .destructive) { historyStore.clearAll() }
+        .alert("Delete Scan History", isPresented: $showDeleteHistoryAlert) {
+            Button("Delete", role: .destructive) {
+                historyStore.clearAll()
+                Task { try? await api.clearMyScanHistory() }
+            }
             Button("Cancel", role: .cancel) {}
         } message: {
             Text("All \(historyStore.entries.count) scanned products will be permanently deleted.")
         }
         .alert("Delete Account", isPresented: $showDeleteAccountAlert) {
             Button("Delete Account", role: .destructive) {
-                userStore.deleteUser()
-                historyStore.clearAll()
+                Task {
+                    try? await api.deleteMyAccount()
+                    userStore.deleteUser()
+                    historyStore.clearAll()
+                }
             }
             Button("Cancel", role: .cancel) {}
         } message: {
             Text("Your account and all locally stored data will be deleted. This action cannot be undone.")
         }
+        .task { await loadProfile() }
     }
- 
+
+    private func loadProfile() async {
+        isLoadingProfile = true
+        defer { isLoadingProfile = false }
+        do {
+            let profile = try await api.getMyProfile()
+            userStore.updateUser(
+                fullName: profile.fullName,
+                email: profile.email,
+                nickname: profile.nickname,
+                avatarUrl: profile.avatarUrl
+            )
+        } catch {
+            // Silent — use local data
+        }
+    }
+
     // MARK: - Header
- 
+
     private var header: some View {
-        Text("Profil")
+        Text("Profile")
             .font(.largeTitle).fontWeight(.heavy)
             .foregroundColor(Color.theme.cardFg)
     }
- 
+
     // MARK: - User Card
- 
+
     private var userCard: some View {
         VStack(spacing: 0) {
             // Illustration
@@ -99,7 +125,7 @@ struct ProfileView: View {
                             .foregroundColor(Color.theme.accentFg)
                     }
                 }
- 
+
                 VStack(alignment: .leading, spacing: 4) {
                     if let user = userStore.currentUser {
                         Text(user.fullName)
@@ -111,7 +137,7 @@ struct ProfileView: View {
                     } else {
                         Text("No Profile")
                             .font(.title3.weight(.bold)).foregroundColor(Color.theme.cardFg)
-                        Text("Tap to create your Profile")
+                        Text("Tap to create your profile")
                             .font(.caption).foregroundColor(Color.theme.mutedFg)
                     }
                 }
@@ -127,9 +153,9 @@ struct ProfileView: View {
         .background(Color.theme.cardBg)
         .cornerRadius(16)
     }
- 
+
     // MARK: - Settings Section
- 
+
     private var settingsSection: some View {
         VStack(alignment: .leading, spacing: 10) {
             sectionLabel("Settings")
@@ -146,26 +172,39 @@ struct ProfileView: View {
                     .tint(Color.theme.accentFg)
                 }
                 .padding(.horizontal, 16).padding(.vertical, 14)
- 
+
                 Divider().padding(.leading, 16)
- 
-                // Benachrichtigungen (Platzhalter)
+
+                // Notifications
                 HStack {
                     Label("Notifications", systemImage: "bell.fill")
                         .font(.subheadline).foregroundColor(Color.theme.cardFg)
                     Spacer()
-                    Text("Soon available")
+                    Text("Coming soon")
                         .font(.caption).foregroundColor(Color.theme.mutedFg)
                 }
                 .padding(.horizontal, 16).padding(.vertical, 14)
+
+                Divider().padding(.leading, 16)
+                Button {
+                    Task { try? await api.logout() }
+                } label: {
+                    HStack {
+                        Label("Sign Out", systemImage: "rectangle.portrait.and.arrow.right")
+                            .font(.subheadline).foregroundColor(Color.theme.warning)
+                        Spacer()
+                    }
+                    .padding(.horizontal, 16).padding(.vertical, 14)
+                }
+                .buttonStyle(.plain)
             }
             .background(Color.theme.cardBg)
             .cornerRadius(14)
         }
     }
- 
+
     // MARK: - Stats Section
- 
+
     private var statsSection: some View {
         VStack(alignment: .leading, spacing: 10) {
             sectionLabel("My Statistics")
@@ -178,14 +217,14 @@ struct ProfileView: View {
                 )
                 StatCard(
                     value: "\(userMessageStore.messages.count)",
-                    label: "Alerts",
+                    label: "Reports",
                     icon: "exclamationmark.bubble.fill",
                     color: Color.theme.accentFg
                 )
                 if historyStore.totalCo2KgPerKg > 0 {
                     StatCard(
                         value: String(format: "%.1f", historyStore.totalCo2KgPerKg),
-                        label: "kg CO₂ total",
+                        label: "kg CO\u{2082} total",
                         icon: "leaf.fill",
                         color: Color.theme.success
                     )
@@ -193,21 +232,21 @@ struct ProfileView: View {
             }
         }
     }
- 
+
     // MARK: - Danger Section
- 
+
     private var dangerSection: some View {
         VStack(alignment: .leading, spacing: 10) {
-            sectionLabel("Daten")
+            sectionLabel("Data")
             VStack(spacing: 0) {
                 Button {
                     showDeleteHistoryAlert = true
                 } label: {
                     HStack {
-                        Label("Delete Scan-History", systemImage: "trash")
+                        Label("Delete Scan History", systemImage: "trash")
                             .font(.subheadline).foregroundColor(Color.theme.warning)
                         Spacer()
-                        Text("\(historyStore.entries.count) Entries")
+                        Text("\(historyStore.entries.count) entries")
                             .font(.caption).foregroundColor(Color.theme.mutedFg)
                         Image(systemName: "chevron.right")
                             .font(.caption2).foregroundColor(Color.theme.mutedFg.opacity(0.35))
@@ -215,14 +254,14 @@ struct ProfileView: View {
                     .padding(.horizontal, 16).padding(.vertical, 14)
                 }
                 .buttonStyle(.plain)
- 
+
                 Divider().padding(.leading, 16)
- 
+
                 Button {
                     showDeleteAccountAlert = true
                 } label: {
                     HStack {
-                        Label("Account & Daten löschen", systemImage: "person.crop.circle.badge.minus")
+                        Label("Delete Account & Data", systemImage: "person.crop.circle.badge.minus")
                             .font(.subheadline).foregroundColor(Color.theme.error)
                         Spacer()
                         Image(systemName: "chevron.right")
@@ -236,9 +275,9 @@ struct ProfileView: View {
             .cornerRadius(14)
         }
     }
- 
+
     // MARK: - Helpers
- 
+
     private func sectionLabel(_ title: String) -> some View {
         Text(title.uppercased())
             .font(.caption.weight(.semibold))
@@ -247,9 +286,9 @@ struct ProfileView: View {
             .padding(.horizontal, 4)
     }
 }
- 
+
 // MARK: - Stat Card
- 
+
 private struct StatCard: View {
     let value: String; let label: String; let icon: String; let color: Color
     var body: some View {
@@ -265,20 +304,119 @@ private struct StatCard: View {
         .cornerRadius(12)
     }
 }
- 
+
+// MARK: - Login Sheet (kept for future use)
+
+private struct LoginSheet: View {
+    @Environment(\.dismiss) private var dismiss
+    @State private var email = ""
+    @State private var password = ""
+    @State private var fullName = ""
+    @State private var nickname = ""
+    @State private var isRegister = false
+    @State private var isLoading = false
+    @State private var errorMessage: String? = nil
+
+    var body: some View {
+        NavigationStack {
+            Form {
+                if isRegister {
+                    Section("Account") {
+                        TextField("Full Name", text: $fullName)
+                            .textContentType(.name)
+                        TextField("Nickname", text: $nickname)
+                            .textContentType(.username)
+                            .autocapitalization(.none)
+                    }
+                }
+                Section("Credentials") {
+                    TextField("Email", text: $email)
+                        .textContentType(.emailAddress)
+                        .keyboardType(.emailAddress)
+                        .autocapitalization(.none)
+                    SecureField("Password", text: $password)
+                        .textContentType(isRegister ? .newPassword : .password)
+                }
+
+                if let errorMessage {
+                    Section {
+                        Text(errorMessage)
+                            .font(.caption).foregroundColor(Color.theme.error)
+                    }
+                }
+
+                Section {
+                    Button {
+                        Task { await authenticate() }
+                    } label: {
+                        HStack {
+                            Spacer()
+                            if isLoading {
+                                ProgressView().tint(.white)
+                            } else {
+                                Text(isRegister ? "Create Account" : "Sign In")
+                                    .fontWeight(.semibold)
+                            }
+                            Spacer()
+                        }
+                    }
+                    .disabled(isLoading || email.isEmpty || password.isEmpty)
+                    .listRowBackground(Color.theme.accentFg)
+                    .foregroundColor(.white)
+
+                    Button {
+                        withAnimation { isRegister.toggle() }
+                    } label: {
+                        Text(isRegister ? "Already have an account? Sign in" : "Don't have an account? Register")
+                            .font(.caption).foregroundColor(Color.theme.accentFg)
+                            .frame(maxWidth: .infinity, alignment: .center)
+                    }
+                }
+            }
+            .navigationTitle(isRegister ? "Register" : "Sign In")
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .topBarLeading) {
+                    Button("Cancel") { dismiss() }
+                }
+            }
+        }
+    }
+
+    private func authenticate() async {
+        isLoading = true
+        errorMessage = nil
+        do {
+            if isRegister {
+                _ = try await TomapoAPIService.shared.register(
+                    fullName: fullName, email: email,
+                    nickname: nickname.isEmpty ? email.components(separatedBy: "@").first ?? "user" : nickname,
+                    password: password
+                )
+            } else {
+                _ = try await TomapoAPIService.shared.login(email: email, password: password)
+            }
+            dismiss()
+        } catch {
+            errorMessage = error.localizedDescription
+        }
+        isLoading = false
+    }
+}
+
 // MARK: - Edit Profile Sheet
- 
+
 private struct EditProfileSheet: View {
     @EnvironmentObject private var userStore: TomapoUserStore
     @Environment(\.dismiss) private var dismiss
- 
+
     @State private var fullName:  String = ""
     @State private var nickname:  String = ""
     @State private var email:     String = ""
     @State private var password:  String = ""
     @State private var confirmPassword: String = ""
     @State private var passwordError: Bool = false
- 
+
     var body: some View {
         NavigationStack {
             Form {
@@ -298,9 +436,9 @@ private struct EditProfileSheet: View {
                             .foregroundColor(Color.theme.cardFg)
                     }
                     HStack {
-                        Text("E-Mail")
+                        Text("Email")
                         Spacer()
-                        TextField("deine@email.ch", text: $email)
+                        TextField("your@email.com", text: $email)
                             .multilineTextAlignment(.trailing)
                             .foregroundColor(Color.theme.cardFg)
                             .keyboardType(.emailAddress)
@@ -337,7 +475,7 @@ private struct EditProfileSheet: View {
 
                         if userStore.currentUser == nil {
                             userStore.createUser(
-                                fullName: fullName.isEmpty ? "Anonym" : fullName,
+                                fullName: fullName.isEmpty ? "Anonymous" : fullName,
                                 email: email, nickname: nickname.isEmpty ? "user" : nickname,
                                 passwordHash: pwHash)
                         } else {
@@ -346,6 +484,14 @@ private struct EditProfileSheet: View {
                                 email: email.isEmpty ? nil : email,
                                 nickname: nickname.isEmpty ? nil : nickname,
                                 passwordHash: pwHash)
+                        }
+
+                        // Sync to server
+                        Task {
+                            try? await TomapoAPIService.shared.updateMyProfile(
+                                fullName: fullName.isEmpty ? nil : fullName,
+                                nickname: nickname.isEmpty ? nil : nickname
+                            )
                         }
                         dismiss()
                     }
@@ -363,9 +509,9 @@ private struct EditProfileSheet: View {
         }
     }
 }
- 
+
 // MARK: - Preview
- 
+
 #Preview {
     ProfileView(selectedTab: .constant(.profile))
         .environmentObject(ThemeManager())

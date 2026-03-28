@@ -19,7 +19,6 @@
  Color.theme.baseBg.ignoresSafeArea()
  ScrollView(showsIndicators: false) {
  VStack(alignment: .leading, spacing: 20) {
- Color.clear.frame(height: 60) // Platz für BackBar
  stationHero
  stationMeta
  stationDetailSection
@@ -81,12 +80,12 @@
  
  private var stationMeta: some View {
  VStack(alignment: .leading, spacing: 0) {
- SectionHeader(title: "Allgemein", icon: "info.circle")
+ SectionHeader(title: "General", icon: "info.circle")
  .padding(.bottom, 8)
  
  VStack(spacing: 0) {
  if let sub = station.subtitle {
- DetailRow(label: "Beschreibung", value: sub)
+ DetailRow(label: "Description", value: sub)
  Divider().padding(.leading, 16)
  }
  if let loc = station.location {
@@ -98,29 +97,29 @@
  Divider().padding(.leading, 16)
  }
  if let end = station.completedAt {
- DetailRow(label: "Abgeschlossen", value: end.formatted(.dateTime.day().month(.wide).year().hour().minute()), icon: "calendar.badge.checkmark")
+ DetailRow(label: "Completed", value: end.formatted(.dateTime.day().month(.wide).year().hour().minute()), icon: "calendar.badge.checkmark")
  Divider().padding(.leading, 16)
  }
  if let dur = station.durationHours {
- DetailRow(label: "Dauer", value: formatDuration(dur), icon: "clock")
+ DetailRow(label: "Duration", value: formatDuration(dur), icon: "clock")
  Divider().padding(.leading, 16)
  }
  if let co2 = station.co2KgPerKg {
- DetailRow(label: "CO₂ Fussabdruck", value: "\(String(format: "%.4f", co2)) kg CO₂eq/kg")
+ DetailRow(label: "CO₂ Footprint", value: "\(String(format: "%.4f", co2)) kg CO₂eq/kg")
  Divider().padding(.leading, 16)
  }
  if station.isVerified {
- DetailRow(label: "Verifiziert von",
- value: station.verifiedBy ?? "Ja",
+ DetailRow(label: "Verified by",
+ value: station.verifiedBy ?? "Yes",
  valueColor: Color.theme.success)
  } else {
- DetailRow(label: "Verifiziert", value: "Nicht verifiziert",
+ DetailRow(label: "Verified", value: "Not verified",
  valueColor: Color.theme.mutedFg.opacity(0.5))
  }
  if let notes = station.notes {
  Divider().padding(.leading, 16)
  VStack(alignment: .leading, spacing: 4) {
- Text("Notizen")
+ Text("Notes")
  .font(.caption)
  .foregroundColor(Color.theme.mutedFg)
  Text(notes)
@@ -166,7 +165,7 @@
  private var qualityChecksSection: some View {
  if !station.qualityChecks.isEmpty {
  VStack(alignment: .leading, spacing: 10) {
- SectionHeader(title: "Qualitätsprüfungen (\(station.qualityChecks.count))",
+ SectionHeader(title: "Quality Checks (\(station.qualityChecks.count))",
  icon: "checklist")
  ForEach(station.qualityChecks) { check in
  QualityCheckCard(check: check)
@@ -191,13 +190,13 @@
  
  private var statusLabel: String {
  switch station.status {
- case .completed:  return "Abgeschlossen"
- case .warning:    return "Mit Auffälligkeiten"
- case .failed:     return "Fehlgeschlagen"
- case .active:     return "Aktiv"
- case .pending:    return "Ausstehend"
- case .skipped:    return "Übersprungen"
- case .unknown:    return "Unbekannt"
+ case .completed:  return "Completed"
+ case .warning:    return "Warning"
+ case .failed:     return "Failed"
+ case .active:     return "Active"
+ case .pending:    return "Pending"
+ case .skipped:    return "Skipped"
+ case .unknown:    return "Unknown"
  }
  }
  
@@ -244,10 +243,10 @@
  }
  
  private func formatDuration(_ hours: Double) -> String {
- if hours < 1 { return "\(Int(hours * 60)) Min." }
- if hours < 24 { return "\(Int(hours)) Std." }
+ if hours < 1 { return "\(Int(hours * 60)) min" }
+ if hours < 24 { return "\(Int(hours)) hrs" }
  let d = Int(hours / 24); let h = Int(hours.truncatingRemainder(dividingBy: 24))
- return h > 0 ? "\(d) Tage \(h) Std." : "\(d) Tage"
+ return h > 0 ? "\(d)d \(h)h" : "\(d) days"
  }
  }
  
@@ -256,23 +255,23 @@
  private struct FarmingDetailSection: View {
  let detail: FarmingDetail
  var body: some View {
- DetailCardSection(title: "Anbau / Landwirtschaft", icon: "leaf.fill") {
- if let name = detail.farmName { InfoDetailRow(label: "Betrieb", value: name) }
- InfoDetailRow(label: "Methode", value: detail.farmingMethod.rawValue.capitalized)
- if let year = detail.cropYear { InfoDetailRow(label: "Erntejahr", value: "\(year)") }
- if let species = detail.animalSpecies { InfoDetailRow(label: "Tierart", value: species) }
- if let system = detail.husbandrySystem { InfoDetailRow(label: "Haltungsform", value: system.rawValue.replacingOccurrences(of: "_", with: " ").capitalized) }
- if let area = detail.areaHectares { InfoDetailRow(label: "Fläche", value: "\(String(format: "%.1f", area)) ha") }
- if !detail.fertilizerTypes.isEmpty { InfoDetailRow(label: "Dünger", value: detail.fertilizerTypes.map { $0.rawValue }.joined(separator: ", ")) }
- if !detail.pesticideTypes.isEmpty { InfoDetailRow(label: "⚠ Pestizide", value: detail.pesticideTypes.joined(separator: ", "), valueColor: Color.theme.warning) }
- else { InfoDetailRow(label: "Pestizide", value: "Keine", valueColor: Color.theme.success) }
- if let irr = detail.irrigationType { InfoDetailRow(label: "Bewässerung", value: irr.rawValue.replacingOccurrences(of: "_", with: " ").capitalized) }
- if let soil = detail.soilType { InfoDetailRow(label: "Bodentyp", value: soil) }
- if let planting = detail.plantingDate { InfoDetailRow(label: "Pflanzung", value: planting.formatted(.dateTime.day().month(.abbreviated).year())) }
- if let hs = detail.expectedHarvestStart { InfoDetailRow(label: "Ernte von", value: hs.formatted(.dateTime.day().month(.abbreviated).year())) }
- if let he = detail.expectedHarvestEnd { InfoDetailRow(label: "Ernte bis", value: he.formatted(.dateTime.day().month(.abbreviated).year())) }
+ DetailCardSection(title: "Farming / Agriculture", icon: "leaf.fill") {
+ if let name = detail.farmName { InfoDetailRow(label: "Farm", value: name) }
+ InfoDetailRow(label: "Method", value: detail.farmingMethod.rawValue.capitalized)
+ if let year = detail.cropYear { InfoDetailRow(label: "Crop Year", value: "\(year)") }
+ if let species = detail.animalSpecies { InfoDetailRow(label: "Animal Species", value: species) }
+ if let system = detail.husbandrySystem { InfoDetailRow(label: "Husbandry System", value: system.rawValue.replacingOccurrences(of: "_", with: " ").capitalized) }
+ if let area = detail.areaHectares { InfoDetailRow(label: "Area", value: "\(String(format: "%.1f", area)) ha") }
+ if !detail.fertilizerTypes.isEmpty { InfoDetailRow(label: "Fertilizer", value: detail.fertilizerTypes.map { $0.rawValue }.joined(separator: ", ")) }
+ if !detail.pesticideTypes.isEmpty { InfoDetailRow(label: "⚠ Pesticides", value: detail.pesticideTypes.joined(separator: ", "), valueColor: Color.theme.warning) }
+ else { InfoDetailRow(label: "Pesticides", value: "None", valueColor: Color.theme.success) }
+ if let irr = detail.irrigationType { InfoDetailRow(label: "Irrigation", value: irr.rawValue.replacingOccurrences(of: "_", with: " ").capitalized) }
+ if let soil = detail.soilType { InfoDetailRow(label: "Soil Type", value: soil) }
+ if let planting = detail.plantingDate { InfoDetailRow(label: "Planting", value: planting.formatted(.dateTime.day().month(.abbreviated).year())) }
+ if let hs = detail.expectedHarvestStart { InfoDetailRow(label: "Harvest from", value: hs.formatted(.dateTime.day().month(.abbreviated).year())) }
+ if let he = detail.expectedHarvestEnd { InfoDetailRow(label: "Harvest to", value: he.formatted(.dateTime.day().month(.abbreviated).year())) }
  if !detail.fieldCoordinates.isEmpty {
- InfoDetailRow(label: "Koordinaten",
+ InfoDetailRow(label: "Coordinates",
  value: detail.fieldCoordinates.prefix(2)
  .map { "(\(String(format: "%.4f", $0.latitude)), \(String(format: "%.4f", $0.longitude)))" }
  .joined(separator: " · "))
@@ -284,15 +283,15 @@
  private struct FishingDetailSection: View {
  let detail: FishingDetail
  var body: some View {
- DetailCardSection(title: "Fischfang / Aquakultur", icon: "fish.fill") {
- InfoDetailRow(label: "Methode", value: detail.method.rawValue.replacingOccurrences(of: "_", with: " ").capitalized)
- if let area = detail.catchArea { InfoDetailRow(label: "Fanggebiet", value: area) }
- if let vessel = detail.vessel { InfoDetailRow(label: "Schiff", value: vessel) }
- if let id = detail.vesselId { InfoDetailRow(label: "IMO-Nummer", value: id) }
- if let date = detail.catchDate { InfoDetailRow(label: "Fangdatum", value: date.formatted(.dateTime.day().month().year())) }
- InfoDetailRow(label: "MSC-zertifiziert", value: detail.isMscCertified ? "Ja" : "Nein", valueColor: detail.isMscCertified ? Color.theme.success : Color.theme.mutedFg)
- InfoDetailRow(label: "ASC-zertifiziert", value: detail.isAscCertified ? "Ja" : "Nein", valueColor: detail.isAscCertified ? Color.theme.success : Color.theme.mutedFg)
- if let bc = detail.bycatchInfo { InfoDetailRow(label: "Beifang-Info", value: bc) }
+ DetailCardSection(title: "Fishing / Aquaculture", icon: "fish.fill") {
+ InfoDetailRow(label: "Method", value: detail.method.rawValue.replacingOccurrences(of: "_", with: " ").capitalized)
+ if let area = detail.catchArea { InfoDetailRow(label: "Catch Area", value: area) }
+ if let vessel = detail.vessel { InfoDetailRow(label: "Vessel", value: vessel) }
+ if let id = detail.vesselId { InfoDetailRow(label: "IMO Number", value: id) }
+ if let date = detail.catchDate { InfoDetailRow(label: "Catch Date", value: date.formatted(.dateTime.day().month().year())) }
+ InfoDetailRow(label: "MSC Certified", value: detail.isMscCertified ? "Yes" : "No", valueColor: detail.isMscCertified ? Color.theme.success : Color.theme.mutedFg)
+ InfoDetailRow(label: "ASC Certified", value: detail.isAscCertified ? "Yes" : "No", valueColor: detail.isAscCertified ? Color.theme.success : Color.theme.mutedFg)
+ if let bc = detail.bycatchInfo { InfoDetailRow(label: "Bycatch Info", value: bc) }
  }
  }
  }
@@ -300,14 +299,14 @@
  private struct HarvestDetailSection: View {
  let detail: HarvestDetail
  var body: some View {
- DetailCardSection(title: "Ernte / Schlachtung", icon: "scissors") {
- InfoDetailRow(label: "Methode", value: detail.isManual ? "Manuell" : "Maschinell")
- if let date = detail.harvestDate { InfoDetailRow(label: "Datum", value: date.formatted(.dateTime.day().month().year())) }
- if let grade = detail.gradeAfterHarvest { InfoDetailRow(label: "Qualitätsklasse", value: grade) }
- if let yield = detail.yieldPercent { InfoDetailRow(label: "Ausbeute", value: "\(String(format: "%.1f", yield))%") }
- if let temp = detail.harvestTemperatureCelsius { InfoDetailRow(label: "Temperatur", value: "\(String(format: "%.1f", temp))°C") }
- if let workers = detail.workerCount { InfoDetailRow(label: "Mitarbeiter", value: "\(workers)") }
- InfoDetailRow(label: "Sofortgekühlt", value: detail.immediatelyPrecooled ? "Ja" : "Nein")
+ DetailCardSection(title: "Harvest / Slaughter", icon: "scissors") {
+ InfoDetailRow(label: "Method", value: detail.isManual ? "Manual" : "Mechanical")
+ if let date = detail.harvestDate { InfoDetailRow(label: "Date", value: date.formatted(.dateTime.day().month().year())) }
+ if let grade = detail.gradeAfterHarvest { InfoDetailRow(label: "Quality Grade", value: grade) }
+ if let yield = detail.yieldPercent { InfoDetailRow(label: "Yield", value: "\(String(format: "%.1f", yield))%") }
+ if let temp = detail.harvestTemperatureCelsius { InfoDetailRow(label: "Temperature", value: "\(String(format: "%.1f", temp))°C") }
+ if let workers = detail.workerCount { InfoDetailRow(label: "Workers", value: "\(workers)") }
+ InfoDetailRow(label: "Immediately Pre-cooled", value: detail.immediatelyPrecooled ? "Yes" : "No")
  }
  }
  }
@@ -315,17 +314,17 @@
  private struct ProcessingDetailSection: View {
  let detail: ProcessingDetail
  var body: some View {
- DetailCardSection(title: "Verarbeitung", icon: "gearshape.fill") {
- if let name = detail.facilityName { InfoDetailRow(label: "Werk", value: name) }
+ DetailCardSection(title: "Processing", icon: "gearshape.fill") {
+ if let name = detail.facilityName { InfoDetailRow(label: "Facility", value: name) }
  if let emb = detail.facilityEmbCode { InfoDetailRow(label: "EMB-Code", value: emb) }
- if !detail.processTypes.isEmpty { InfoDetailRow(label: "Prozesse", value: detail.processTypes.map { $0.rawValue.replacingOccurrences(of: "_", with: " ").capitalized }.joined(separator: ", ")) }
- if let temp = detail.processingTemperatureCelsius { InfoDetailRow(label: "Temperatur", value: "\(String(format: "%.0f", temp))°C") }
- if let past = detail.pasteurization { InfoDetailRow(label: "Pasteurisierung", value: "\(past.method.rawValue.uppercased()) · \(Int(past.temperatureCelsius))°C / \(past.durationSeconds)s") }
- if let steril = detail.sterilization { InfoDetailRow(label: "Sterilisierung", value: "\(Int(steril.temperatureCelsius))°C / \(steril.durationMinutes) Min.") }
- if !detail.additivesAdded.isEmpty { InfoDetailRow(label: "Zusatzstoffe", value: detail.additivesAdded.map { $0.replacingOccurrences(of: "en:", with: "").uppercased() }.joined(separator: ", ")) }
- InfoDetailRow(label: "HACCP", value: detail.isHaccpCertified ? "Zertifiziert" : "Nicht zertifiziert", valueColor: detail.isHaccpCertified ? Color.theme.success : Color.theme.mutedFg)
+ if !detail.processTypes.isEmpty { InfoDetailRow(label: "Processes", value: detail.processTypes.map { $0.rawValue.replacingOccurrences(of: "_", with: " ").capitalized }.joined(separator: ", ")) }
+ if let temp = detail.processingTemperatureCelsius { InfoDetailRow(label: "Temperature", value: "\(String(format: "%.0f", temp))°C") }
+ if let past = detail.pasteurization { InfoDetailRow(label: "Pasteurization", value: "\(past.method.rawValue.uppercased()) · \(Int(past.temperatureCelsius))°C / \(past.durationSeconds)s") }
+ if let steril = detail.sterilization { InfoDetailRow(label: "Sterilization", value: "\(Int(steril.temperatureCelsius))°C / \(steril.durationMinutes) min") }
+ if !detail.additivesAdded.isEmpty { InfoDetailRow(label: "Additives", value: detail.additivesAdded.map { $0.replacingOccurrences(of: "en:", with: "").uppercased() }.joined(separator: ", ")) }
+ InfoDetailRow(label: "HACCP", value: detail.isHaccpCertified ? "Certified" : "Not certified", valueColor: detail.isHaccpCertified ? Color.theme.success : Color.theme.mutedFg)
  if let standard = detail.foodSafetyStandard { InfoDetailRow(label: "Standard", value: standard.rawValue.uppercased().replacingOccurrences(of: "_", with: " ")) }
- if let batch = detail.batchSizeKg { InfoDetailRow(label: "Chargengrösse", value: "\(String(format: "%.0f", batch)) kg") }
+ if let batch = detail.batchSizeKg { InfoDetailRow(label: "Batch Size", value: "\(String(format: "%.0f", batch)) kg") }
  }
  }
  }
@@ -333,8 +332,8 @@
  private struct PackagingDetailSection: View {
  let detail: PackagingDetail
  var body: some View {
- DetailCardSection(title: "Verpackung", icon: "shippingbox.fill") {
- if let name = detail.facilityName { InfoDetailRow(label: "Werk", value: name) }
+ DetailCardSection(title: "Packaging", icon: "shippingbox.fill") {
+ if let name = detail.facilityName { InfoDetailRow(label: "Facility", value: name) }
  if !detail.materials.isEmpty {
  ForEach(detail.materials, id: \.material) { mat in
  HStack {
@@ -342,7 +341,7 @@
  Text(mat.shape ?? mat.material.replacingOccurrences(of: "en:", with: ""))
  .font(.subheadline)
  .foregroundColor(Color.theme.cardFg)
- Text(mat.isRecyclable ? "♻ Recyclebar" : "Nicht recyclebar")
+ Text(mat.isRecyclable ? "♻ Recyclable" : "Not recyclable")
  .font(.caption2)
  .foregroundColor(mat.isRecyclable ? Color.theme.success : Color.theme.error)
  }
@@ -357,18 +356,18 @@
  }
  }
  if let map = detail.modifiedAtmosphere {
- InfoDetailRow(label: "Schutzatmosphäre",
+ InfoDetailRow(label: "Modified Atmosphere",
  value: [
  map.oxygenPercent.map { "O₂: \(String(format: "%.0f", $0))%" },
  map.co2Percent.map { "CO₂: \(String(format: "%.0f", $0))%" },
  map.nitrogenPercent.map { "N₂: \(String(format: "%.0f", $0))%" }
  ].compactMap { $0 }.joined(separator: " · "))
  }
- InfoDetailRow(label: "Vakuumverpackt", value: detail.isVacuumPacked ? "Ja" : "Nein")
- if let total = detail.totalPackagingWeightGrams { InfoDetailRow(label: "Gesamtgewicht", value: "\(String(format: "%.1f", total))g") }
- if !detail.labelLanguages.isEmpty { InfoDetailRow(label: "Etikettensprachen", value: detail.labelLanguages.joined(separator: ", ")) }
- if let exp = detail.expirationDate { InfoDetailRow(label: "MHD", value: exp.formatted(.dateTime.day().month().year())) }
- if let batch = detail.batchCodeOnPackaging { InfoDetailRow(label: "Chargennummer", value: batch) }
+ InfoDetailRow(label: "Vacuum Packed", value: detail.isVacuumPacked ? "Yes" : "No")
+ if let total = detail.totalPackagingWeightGrams { InfoDetailRow(label: "Total Weight", value: "\(String(format: "%.1f", total))g") }
+ if !detail.labelLanguages.isEmpty { InfoDetailRow(label: "Label Languages", value: detail.labelLanguages.joined(separator: ", ")) }
+ if let exp = detail.expirationDate { InfoDetailRow(label: "Best Before", value: exp.formatted(.dateTime.day().month().year())) }
+ if let batch = detail.batchCodeOnPackaging { InfoDetailRow(label: "Batch Number", value: batch) }
  }
  }
  }
@@ -376,14 +375,14 @@
  private struct StorageDetailSection: View {
  let detail: StorageDetail
  var body: some View {
- DetailCardSection(title: "Lagerung", icon: "building.2.fill") {
- if let name = detail.facilityName { InfoDetailRow(label: "Lager", value: name) }
- InfoDetailRow(label: "Lagertyp", value: detail.facilityType.rawValue.replacingOccurrences(of: "_", with: " ").capitalized)
- if let dur = detail.storageDurationHours { InfoDetailRow(label: "Dauer", value: "\(String(format: "%.0f", dur)) Std.") }
+ DetailCardSection(title: "Storage", icon: "building.2.fill") {
+ if let name = detail.facilityName { InfoDetailRow(label: "Warehouse", value: name) }
+ InfoDetailRow(label: "Storage Type", value: detail.facilityType.rawValue.replacingOccurrences(of: "_", with: " ").capitalized)
+ if let dur = detail.storageDurationHours { InfoDetailRow(label: "Duration", value: "\(String(format: "%.0f", dur)) hrs") }
  if let temp = detail.averageTemperatureCelsius { InfoDetailRow(label: "Ø Temperatur", value: "\(String(format: "%.1f", temp))°C") }
- if let hum = detail.humidityPercent { InfoDetailRow(label: "Luftfeuchtigkeit", value: "\(String(format: "%.0f", hum))%") }
- if let light = detail.lightCondition { InfoDetailRow(label: "Lichtverhältnis", value: light.rawValue.capitalized) }
- InfoDetailRow(label: "Max. Dauer überschritten", value: detail.maxDurationExceeded ? "⚠ Ja" : "Nein", valueColor: detail.maxDurationExceeded ? Color.theme.error : Color.theme.success)
+ if let hum = detail.humidityPercent { InfoDetailRow(label: "Humidity", value: "\(String(format: "%.0f", hum))%") }
+ if let light = detail.lightCondition { InfoDetailRow(label: "Light Condition", value: light.rawValue.capitalized) }
+ InfoDetailRow(label: "Max. Duration Exceeded", value: detail.maxDurationExceeded ? "⚠ Yes" : "No", valueColor: detail.maxDurationExceeded ? Color.theme.error : Color.theme.success)
  }
  }
  }
@@ -391,23 +390,23 @@
  private struct ColdStorageDetailSection: View {
  let detail: ColdStorageDetail
  var body: some View {
- DetailCardSection(title: "Kühllagerung / Kühltransport", icon: "thermometer.snowflake") {
- if let name = detail.facilityName { InfoDetailRow(label: "Anlage", value: name) }
- InfoDetailRow(label: "Solltemperatur", value: "\(String(format: "%.1f", detail.targetTemperatureCelsius))°C")
+ DetailCardSection(title: "Cold Storage / Cold Transport", icon: "thermometer.snowflake") {
+ if let name = detail.facilityName { InfoDetailRow(label: "Facility", value: name) }
+ InfoDetailRow(label: "Target Temperature", value: "\(String(format: "%.1f", detail.targetTemperatureCelsius))°C")
  if let min = detail.minActualTemperatureCelsius { InfoDetailRow(label: "Minimum", value: "\(String(format: "%.1f", min))°C") }
  if let max = detail.maxActualTemperatureCelsius { InfoDetailRow(label: "Maximum", value: "\(String(format: "%.1f", max))°C") }
- if let avg = detail.avgActualTemperatureCelsius { InfoDetailRow(label: "Durchschnitt", value: "\(String(format: "%.1f", avg))°C") }
- InfoDetailRow(label: "Kühlkette unterbrochen", value: detail.coldChainBroken ? "⚠ Ja" : "Intakt", valueColor: detail.coldChainBroken ? Color.theme.error : Color.theme.success)
+ if let avg = detail.avgActualTemperatureCelsius { InfoDetailRow(label: "Average", value: "\(String(format: "%.1f", avg))°C") }
+ InfoDetailRow(label: "Cold Chain Interrupted", value: detail.coldChainBroken ? "⚠ Yes" : "Intact", valueColor: detail.coldChainBroken ? Color.theme.error : Color.theme.success)
  if !detail.coldChainBreaks.isEmpty {
  ForEach(Array(detail.coldChainBreaks.enumerated()), id: \.offset) { i, brk in
- InfoDetailRow(label: "Unterbrechung \(i+1)",
- value: "\(brk.occurredAt.formatted(.dateTime.hour().minute())) · \(brk.durationMinutes) Min. · max \(String(format: "%.1f", brk.maxTemperatureReached))°C",
+ InfoDetailRow(label: "Interruption \(i+1)",
+ value: "\(brk.occurredAt.formatted(.dateTime.hour().minute())) · \(brk.durationMinutes) min · max \(String(format: "%.1f", brk.maxTemperatureReached))°C",
  valueColor: Color.theme.warning)
  }
  }
  if let sensor = detail.sensorId { InfoDetailRow(label: "Sensor-ID", value: sensor) }
  if let last = detail.lastSensorReading {
- InfoDetailRow(label: "Letzte Messung",
+ InfoDetailRow(label: "Last Reading",
  value: "\(String(format: "%.1f", last.temperatureCelsius))°C · \(last.timestamp.formatted(.dateTime.hour().minute()))",
  valueColor: last.isWithinRange ? Color.theme.success : Color.theme.warning)
  }
@@ -419,22 +418,22 @@
  let detail: TransportDetail
  var body: some View {
  DetailCardSection(title: "Transport", icon: "truck.box.fill") {
- InfoDetailRow(label: "Transportmittel", value: detail.mode.rawValue.replacingOccurrences(of: "_", with: " ").capitalized)
- if let carrier = detail.carrierName { InfoDetailRow(label: "Spediteur", value: carrier) }
+ InfoDetailRow(label: "Transport Mode", value: detail.mode.rawValue.replacingOccurrences(of: "_", with: " ").capitalized)
+ if let carrier = detail.carrierName { InfoDetailRow(label: "Carrier", value: carrier) }
  if let id = detail.trackingId { InfoDetailRow(label: "Tracking-ID", value: id) }
- if let dist = detail.distanceKm { InfoDetailRow(label: "Distanz", value: "\(String(format: "%.0f", dist)) km") }
- InfoDetailRow(label: "Kühlstransport", value: detail.isRefrigerated ? "Ja" : "Nein")
- if let fuel = detail.fuelType { InfoDetailRow(label: "Treibstoff", value: fuel.rawValue.replacingOccurrences(of: "_", with: " ").capitalized) }
- if let vehicle = detail.vehicleType { InfoDetailRow(label: "Fahrzeug", value: vehicle) }
+ if let dist = detail.distanceKm { InfoDetailRow(label: "Distance", value: "\(String(format: "%.0f", dist)) km") }
+ InfoDetailRow(label: "Refrigerated Transport", value: detail.isRefrigerated ? "Yes" : "No")
+ if let fuel = detail.fuelType { InfoDetailRow(label: "Fuel", value: fuel.rawValue.replacingOccurrences(of: "_", with: " ").capitalized) }
+ if let vehicle = detail.vehicleType { InfoDetailRow(label: "Vehicle", value: vehicle) }
  if let co2 = detail.co2EmissionsKg { InfoDetailRow(label: "CO₂ Emission", value: "\(String(format: "%.2f", co2)) kg CO₂eq") }
- if let sched = detail.scheduledArrival { InfoDetailRow(label: "Geplante Ankunft", value: sched.formatted(.dateTime.day().month().hour().minute())) }
- if let actual = detail.actualArrival { InfoDetailRow(label: "Tatsächliche Ankunft", value: actual.formatted(.dateTime.day().month().hour().minute())) }
- if let origin = detail.originLocation { InfoDetailRow(label: "Von", value: [origin.city, origin.country].compactMap { $0 }.joined(separator: ", ")) }
- if let dest = detail.destinationLocation { InfoDetailRow(label: "Nach", value: [dest.city, dest.country].compactMap { $0 }.joined(separator: ", ")) }
- if !detail.delayReasons.isEmpty { InfoDetailRow(label: "Verspätung", value: detail.delayReasons.joined(separator: ", "), valueColor: Color.theme.warning) }
+ if let sched = detail.scheduledArrival { InfoDetailRow(label: "Scheduled Arrival", value: sched.formatted(.dateTime.day().month().hour().minute())) }
+ if let actual = detail.actualArrival { InfoDetailRow(label: "Actual Arrival", value: actual.formatted(.dateTime.day().month().hour().minute())) }
+ if let origin = detail.originLocation { InfoDetailRow(label: "From", value: [origin.city, origin.country].compactMap { $0 }.joined(separator: ", ")) }
+ if let dest = detail.destinationLocation { InfoDetailRow(label: "To", value: [dest.city, dest.country].compactMap { $0 }.joined(separator: ", ")) }
+ if !detail.delayReasons.isEmpty { InfoDetailRow(label: "Delay", value: detail.delayReasons.joined(separator: ", "), valueColor: Color.theme.warning) }
  if let cold = detail.coldStorageDetail {
- InfoDetailRow(label: "Kühltemperatur", value: "\(String(format: "%.1f", cold.targetTemperatureCelsius))°C Soll")
- if cold.coldChainBroken { InfoDetailRow(label: "⚠ Kühlkette", value: "Unterbrochen", valueColor: Color.theme.error) }
+ InfoDetailRow(label: "Refrigeration Temp.", value: "\(String(format: "%.1f", cold.targetTemperatureCelsius))°C Target")
+ if cold.coldChainBroken { InfoDetailRow(label: "⚠ Cold Chain", value: "Interrupted", valueColor: Color.theme.error) }
  }
  }
  }
@@ -443,15 +442,15 @@
  private struct DistributionDetailSection: View {
  let detail: DistributionDetail
  var body: some View {
- DetailCardSection(title: "Distribution / Verteilzentrum", icon: "building.2") {
- if let name = detail.centerName { InfoDetailRow(label: "Zentrum", value: name) }
+ DetailCardSection(title: "Distribution / Center", icon: "building.2") {
+ if let name = detail.centerName { InfoDetailRow(label: "Center", value: name) }
  InfoDetailRow(label: "Typ", value: detail.centerType.rawValue.replacingOccurrences(of: "_", with: " ").capitalized)
- if let inb = detail.inboundDate { InfoDetailRow(label: "Eingang", value: inb.formatted(.dateTime.day().month().year().hour().minute())) }
- if let out = detail.outboundDate { InfoDetailRow(label: "Ausgang", value: out.formatted(.dateTime.day().month().year().hour().minute())) }
- if let count = detail.handlingCount { InfoDetailRow(label: "Umschlagsvorgänge", value: "\(count)") }
- InfoDetailRow(label: "Zollabgefertigt", value: detail.customsCleared ? "Ja" : "Nein", valueColor: detail.customsCleared ? Color.theme.success : Color.theme.mutedFg)
- if let imp = detail.importInspectionPassed { InfoDetailRow(label: "Einfuhrkontrolle", value: imp ? "Bestanden" : "Nicht bestanden", valueColor: imp ? Color.theme.success : Color.theme.error) }
- if let by = detail.inspectedBy { InfoDetailRow(label: "Kontrolliert von", value: by) }
+ if let inb = detail.inboundDate { InfoDetailRow(label: "Inbound", value: inb.formatted(.dateTime.day().month().year().hour().minute())) }
+ if let out = detail.outboundDate { InfoDetailRow(label: "Outbound", value: out.formatted(.dateTime.day().month().year().hour().minute())) }
+ if let count = detail.handlingCount { InfoDetailRow(label: "Handling Count", value: "\(count)") }
+ InfoDetailRow(label: "Customs Cleared", value: detail.customsCleared ? "Yes" : "No", valueColor: detail.customsCleared ? Color.theme.success : Color.theme.mutedFg)
+ if let imp = detail.importInspectionPassed { InfoDetailRow(label: "Import Inspection", value: imp ? "Passed" : "Failed", valueColor: imp ? Color.theme.success : Color.theme.error) }
+ if let by = detail.inspectedBy { InfoDetailRow(label: "Inspected by", value: by) }
  }
  }
  }
@@ -459,14 +458,14 @@
  private struct RetailDetailSection: View {
  let detail: RetailDetail
  var body: some View {
- DetailCardSection(title: "Verkauf / Retail", icon: "storefront.fill") {
- if let chain = detail.storeChain { InfoDetailRow(label: "Kette", value: chain) }
- if let name = detail.storeName { InfoDetailRow(label: "Filiale", value: name) }
- InfoDetailRow(label: "Regaltyp", value: detail.displayType.rawValue.capitalized)
- if let temp = detail.displayTemperatureCelsius { InfoDetailRow(label: "Regaltemperatur", value: "\(String(format: "%.1f", temp))°C") }
- if let first = detail.firstOnShelfDate { InfoDetailRow(label: "Erstmals im Regal", value: first.formatted(.dateTime.day().month().year())) }
- if let mhd = detail.bestBeforeDate { InfoDetailRow(label: "MHD", value: mhd.formatted(.dateTime.day().month().year())) }
- if let price = detail.priceChf { InfoDetailRow(label: "Preis", value: "CHF \(String(format: "%.2f", price))") }
+ DetailCardSection(title: "Retail / Point of Sale", icon: "storefront.fill") {
+ if let chain = detail.storeChain { InfoDetailRow(label: "Chain", value: chain) }
+ if let name = detail.storeName { InfoDetailRow(label: "Store", value: name) }
+ InfoDetailRow(label: "Display Type", value: detail.displayType.rawValue.capitalized)
+ if let temp = detail.displayTemperatureCelsius { InfoDetailRow(label: "Display Temperature", value: "\(String(format: "%.1f", temp))°C") }
+ if let first = detail.firstOnShelfDate { InfoDetailRow(label: "First on Shelf", value: first.formatted(.dateTime.day().month().year())) }
+ if let mhd = detail.bestBeforeDate { InfoDetailRow(label: "Best Before", value: mhd.formatted(.dateTime.day().month().year())) }
+ if let price = detail.priceChf { InfoDetailRow(label: "Price", value: "CHF \(String(format: "%.2f", price))") }
  }
  }
  }
@@ -477,32 +476,32 @@
  var body: some View {
  VStack(alignment: .leading, spacing: 16) {
  // Lab-Identität
- DetailCardSection(title: "Labor", icon: "flask.fill") {
- if let name = detail.laboratoryName { InfoDetailRow(label: "Labor", value: name) }
- if let accred = detail.accreditationNumber { InfoDetailRow(label: "Akkreditierung", value: accred) }
- if let body = detail.accreditationBody { InfoDetailRow(label: "Akkreditierungsstelle", value: body) }
- InfoDetailRow(label: "ISO 17025", value: detail.isIso17025Accredited ? "Akkreditiert ✓" : "Nicht akkreditiert", valueColor: detail.isIso17025Accredited ? Color.theme.success : Color.theme.mutedFg)
- InfoDetailRow(label: "Labortyp", value: detail.laboratoryType.rawValue.replacingOccurrences(of: "_", with: " ").capitalized)
+ DetailCardSection(title: "Laboratory", icon: "flask.fill") {
+ if let name = detail.laboratoryName { InfoDetailRow(label: "Laboratory", value: name) }
+ if let accred = detail.accreditationNumber { InfoDetailRow(label: "Accreditation", value: accred) }
+ if let body = detail.accreditationBody { InfoDetailRow(label: "Accreditation Body", value: body) }
+ InfoDetailRow(label: "ISO 17025", value: detail.isIso17025Accredited ? "Accredited ✓" : "Not accredited", valueColor: detail.isIso17025Accredited ? Color.theme.success : Color.theme.mutedFg)
+ InfoDetailRow(label: "Laboratory Type", value: detail.laboratoryType.rawValue.replacingOccurrences(of: "_", with: " ").capitalized)
  }
  
  // Probe
- DetailCardSection(title: "Probe", icon: "eyedropper.halffull") {
- if let sid = detail.sampleId { InfoDetailRow(label: "Probe-ID", value: sid) }
+ DetailCardSection(title: "Sample", icon: "eyedropper.halffull") {
+ if let sid = detail.sampleId { InfoDetailRow(label: "Sample ID", value: sid) }
  if let matrix = detail.sampleMatrix { InfoDetailRow(label: "Matrix", value: matrix) }
- if let batch = detail.batchId { InfoDetailRow(label: "Charge", value: batch) }
- InfoDetailRow(label: "Entnahme-Methode", value: detail.samplingMethod.rawValue.replacingOccurrences(of: "_", with: " ").capitalized)
- if let by = detail.sampledBy { InfoDetailRow(label: "Entnommen von", value: by) }
- if let at = detail.sampledAt { InfoDetailRow(label: "Entnahmezeitpunkt", value: at.formatted(.dateTime.day().month().year().hour().minute())) }
- if let w = detail.sampleWeightGrams { InfoDetailRow(label: "Probengewicht", value: "\(String(format: "%.0f", w))g") }
- InfoDetailRow(label: "Gekühlt transportiert", value: detail.sampleTransportedCooled ? "Ja" : "Nein")
- if let at = detail.sampleArrivalTemperatureCelsius { InfoDetailRow(label: "Eingangstemperatur", value: "\(String(format: "%.1f", at))°C") }
- if let start = detail.analysisStartedAt { InfoDetailRow(label: "Analyse gestartet", value: start.formatted(.dateTime.day().month().year())) }
- if let end = detail.analysisCompletedAt { InfoDetailRow(label: "Analyse abgeschlossen", value: end.formatted(.dateTime.day().month().year())) }
+ if let batch = detail.batchId { InfoDetailRow(label: "Batch", value: batch) }
+ InfoDetailRow(label: "Sampling Method", value: detail.samplingMethod.rawValue.replacingOccurrences(of: "_", with: " ").capitalized)
+ if let by = detail.sampledBy { InfoDetailRow(label: "Sampled by", value: by) }
+ if let at = detail.sampledAt { InfoDetailRow(label: "Sampling Time", value: at.formatted(.dateTime.day().month().year().hour().minute())) }
+ if let w = detail.sampleWeightGrams { InfoDetailRow(label: "Sample Weight", value: "\(String(format: "%.0f", w))g") }
+ InfoDetailRow(label: "Transported Cooled", value: detail.sampleTransportedCooled ? "Yes" : "No")
+ if let at = detail.sampleArrivalTemperatureCelsius { InfoDetailRow(label: "Arrival Temperature", value: "\(String(format: "%.1f", at))°C") }
+ if let start = detail.analysisStartedAt { InfoDetailRow(label: "Analysis Started", value: start.formatted(.dateTime.day().month().year())) }
+ if let end = detail.analysisCompletedAt { InfoDetailRow(label: "Analysis Completed", value: end.formatted(.dateTime.day().month().year())) }
  }
  
  // Mikrobiologie
  if !detail.microbiologicalResults.isEmpty {
- DetailCardSection(title: "Mikrobiologie", icon: "microbe.fill") {
+ DetailCardSection(title: "Microbiology", icon: "microbe.fill") {
  ForEach(Array(detail.microbiologicalResults.enumerated()), id: \.offset) { _, r in
  MicroResultRow(result: r)
  }
@@ -511,7 +510,7 @@
  
  // Chemie
  if !detail.chemicalResults.isEmpty {
- DetailCardSection(title: "Chemische Rückstände", icon: "atom") {
+ DetailCardSection(title: "Chemical Residues", icon: "atom") {
  ForEach(Array(detail.chemicalResults.enumerated()), id: \.offset) { _, r in
  ChemResultRow(result: r)
  }
@@ -520,22 +519,22 @@
  
  // Nährwerte
  if let n = detail.nutritionalAnalysis {
- DetailCardSection(title: "Nährwertanalyse (gemessen)", icon: "fork.knife") {
- if let kcal = n.energyKcal { InfoDetailRow(label: "Energie", value: "\(String(format: "%.0f", kcal)) kcal/100g") }
- if let fat = n.fatG { InfoDetailRow(label: "Fett", value: "\(String(format: "%.1f", fat))g/100g") }
+ DetailCardSection(title: "Nutritional Analysis (measured)", icon: "fork.knife") {
+ if let kcal = n.energyKcal { InfoDetailRow(label: "Energy", value: "\(String(format: "%.0f", kcal)) kcal/100g") }
+ if let fat = n.fatG { InfoDetailRow(label: "Fat", value: "\(String(format: "%.1f", fat))g/100g") }
  if let prot = n.proteinsG { InfoDetailRow(label: "Protein", value: "\(String(format: "%.1f", prot))g/100g") }
- if let salt = n.saltG { InfoDetailRow(label: "Salz", value: "\(String(format: "%.2f", salt))g/100g") }
+ if let salt = n.saltG { InfoDetailRow(label: "Salt", value: "\(String(format: "%.2f", salt))g/100g") }
  if let dev = n.deviationFromDeclarationPercent {
- InfoDetailRow(label: "Abweichung Deklaration", value: "\(String(format: "%.1f", dev))%",
+ InfoDetailRow(label: "Deviation from Declaration", value: "\(String(format: "%.1f", dev))%",
  valueColor: abs(dev) <= 20 ? Color.theme.success : Color.theme.error)
  }
- InfoDetailRow(label: "EU-Toleranz ±20%", value: n.isWithinEuTolerance ? "Eingehalten ✓" : "Überschritten ✗", valueColor: n.isWithinEuTolerance ? Color.theme.success : Color.theme.error)
+ InfoDetailRow(label: "EU-Toleranz ±20%", value: n.isWithinEuTolerance ? "Compliant ✓" : "Exceeded ✗", valueColor: n.isWithinEuTolerance ? Color.theme.success : Color.theme.error)
  }
  }
  
  // Physikalisch
  if !detail.physicalResults.isEmpty {
- DetailCardSection(title: "Physikalische Parameter", icon: "ruler.fill") {
+ DetailCardSection(title: "Physical Parameters", icon: "ruler.fill") {
  ForEach(Array(detail.physicalResults.enumerated()), id: \.offset) { _, r in
  HStack {
  VStack(alignment: .leading, spacing: 2) {
@@ -558,7 +557,7 @@
  
  // Allergene
  if !detail.allergenResults.isEmpty {
- DetailCardSection(title: "Allergen-Tests", icon: "exclamationmark.shield.fill") {
+ DetailCardSection(title: "Allergen Tests", icon: "exclamationmark.shield.fill") {
  ForEach(Array(detail.allergenResults.enumerated()), id: \.offset) { _, r in
  AllergenResultRow(result: r)
  }
@@ -567,7 +566,7 @@
  
  // Authentizität
  if !detail.authenticityResults.isEmpty {
- DetailCardSection(title: "Authentizitäts-Tests", icon: "shield.checkered") {
+ DetailCardSection(title: "Authenticity Tests", icon: "shield.checkered") {
  ForEach(Array(detail.authenticityResults.enumerated()), id: \.offset) { _, r in
  HStack(alignment: .top, spacing: 10) {
  Image(systemName: r.isAuthentic ? "checkmark.circle.fill" : "xmark.circle.fill")
@@ -578,7 +577,7 @@
  .font(.subheadline)
  .foregroundColor(Color.theme.cardFg)
  if let method = r.method { Text(method).font(.caption2).foregroundColor(Color.theme.mutedFg) }
- if let conf = r.confidencePercent { Text("Konfidenz: \(String(format: "%.1f", conf))%").font(.caption2).foregroundColor(Color.theme.mutedFg) }
+ if let conf = r.confidencePercent { Text("Confidence: \(String(format: "%.1f", conf))%").font(.caption2).foregroundColor(Color.theme.mutedFg) }
  if let notes = r.notes { Text(notes).font(.caption2).foregroundColor(Color.theme.mutedFg).lineLimit(3) }
  }
  }
@@ -588,15 +587,15 @@
  }
  
  // Gesamtbewertung
- DetailCardSection(title: "Laborurteil", icon: "checkmark.seal.fill") {
- InfoDetailRow(label: "Gesamturteil", value: detail.overallVerdict.rawValue.replacingOccurrences(of: "_", with: " ").capitalized,
+ DetailCardSection(title: "Laboratory Verdict", icon: "checkmark.seal.fill") {
+ InfoDetailRow(label: "Overall Verdict", value: detail.overallVerdict.rawValue.replacingOccurrences(of: "_", with: " ").capitalized,
  valueColor: detail.overallVerdict == .compliant ? Color.theme.success : detail.overallVerdict == .minorDeviation ? Color.theme.warning : Color.theme.error)
- InfoDetailRow(label: "Grenzwertüberschreitungen", value: "\(detail.exceedanceCount)",
+ InfoDetailRow(label: "Limit Exceedances", value: "\(detail.exceedanceCount)",
  valueColor: detail.exceedanceCount == 0 ? Color.theme.success : Color.theme.error)
- if let rec = detail.recommendation { InfoDetailRow(label: "Empfehlung", value: rec.rawValue.replacingOccurrences(of: "_", with: " ").capitalized) }
- if let signed = detail.signedBy { InfoDetailRow(label: "Unterzeichnet von", value: signed) }
- if let issued = detail.reportIssuedAt { InfoDetailRow(label: "Berichtsdatum", value: issued.formatted(.dateTime.day().month().year())) }
- if let report = detail.reportNumber { InfoDetailRow(label: "Berichts-Nr.", value: report) }
+ if let rec = detail.recommendation { InfoDetailRow(label: "Recommendation", value: rec.rawValue.replacingOccurrences(of: "_", with: " ").capitalized) }
+ if let signed = detail.signedBy { InfoDetailRow(label: "Signed by", value: signed) }
+ if let issued = detail.reportIssuedAt { InfoDetailRow(label: "Report Date", value: issued.formatted(.dateTime.day().month().year())) }
+ if let report = detail.reportNumber { InfoDetailRow(label: "Report No.", value: report) }
  }
  }
  }
@@ -607,7 +606,7 @@
  let operator_: String?
  var body: some View {
  DetailCardSection(title: "Details", icon: "doc.text") {
- if let op = operator_ { InfoDetailRow(label: "Betreiber", value: op) }
+ if let op = operator_ { InfoDetailRow(label: "Operator", value: op) }
  VStack(alignment: .leading, spacing: 4) {
  Text(description)
  .font(.subheadline)
@@ -703,7 +702,7 @@
  }
  }
  if let next = check.nextCheckDue {
- Label("Nächste Prüfung: \(next.formatted(.dateTime.day().month().year()))",
+ Label("Next check: \(next.formatted(.dateTime.day().month().year()))",
  systemImage: "calendar.badge.clock")
  .font(.caption2)
  .foregroundColor(Color.theme.mutedFg)
@@ -732,15 +731,15 @@
  case .temperature(let d):
  VStack(alignment: .leading, spacing: 4) {
  HStack {
- Text("Gemessen: \(String(format: "%.1f", d.measuredCelsius))°C")
+ Text("Measured: \(String(format: "%.1f", d.measuredCelsius))°C")
  Spacer(minLength: 4)
- Text("Bereich: \(String(format: "%.1f", d.minAllowedCelsius))–\(String(format: "%.1f", d.maxAllowedCelsius))°C")
+ Text("Range: \(String(format: "%.1f", d.minAllowedCelsius))–\(String(format: "%.1f", d.maxAllowedCelsius))°C")
  .lineLimit(1)
  }
  .font(.caption2)
  .foregroundColor(Color.theme.cardFg.opacity(0.6))
  if !d.log.isEmpty {
- Text("\(d.log.count) Messungen · Min: \(String(format: "%.1f", d.log.map(\.temperatureCelsius).min() ?? 0))°C · Max: \(String(format: "%.1f", d.log.map(\.temperatureCelsius).max() ?? 0))°C")
+ Text("\(d.log.count) readings · Min: \(String(format: "%.1f", d.log.map(\.temperatureCelsius).min() ?? 0))°C · Max: \(String(format: "%.1f", d.log.map(\.temperatureCelsius).max() ?? 0))°C")
  .font(.caption2)
  .foregroundColor(Color.theme.mutedFg)
  }
@@ -757,13 +756,13 @@
  .font(.caption2)
  .foregroundColor(Color.theme.cardFg.opacity(0.65))
  Spacer()
- Text(p.detected ? (p.limitExceeded ? "⚠ Limit überschritten" : "Nachgewiesen") : "n.d.")
+ Text(p.detected ? (p.limitExceeded ? "⚠ Limit exceeded" : "Detected") : "n.d.")
  .font(.caption2)
  .foregroundColor(p.detected ? (p.limitExceeded ? Color.theme.error : Color.theme.warning) : Color.theme.success)
  }
  }
  if let total = d.totalBacterialCount {
- Text("Gesamtkeimzahl: \(Int(total.totalCfu)) / \(Int(total.acceptableLimit)) KBE/g")
+ Text("Total bacterial count: \(Int(total.totalCfu)) / \(Int(total.acceptableLimit)) CFU/g")
  .font(.caption2)
  .foregroundColor(total.isAcceptable ? Color.theme.success : Color.theme.error)
  }
@@ -794,21 +793,21 @@
  case .nutritional(let d):
  HStack(spacing: 12) {
  if let e = d.energyKcal { VStack { Text("\(Int(e))").font(.caption.weight(.bold)).foregroundColor(Color.theme.cardFg); Text("kcal").font(.caption2).foregroundColor(Color.theme.mutedFg) } }
- if let f = d.fatG { VStack { Text("\(String(format: "%.1f", f))g").font(.caption.weight(.bold)).foregroundColor(Color.theme.cardFg); Text("Fett").font(.caption2).foregroundColor(Color.theme.mutedFg) } }
+ if let f = d.fatG { VStack { Text("\(String(format: "%.1f", f))g").font(.caption.weight(.bold)).foregroundColor(Color.theme.cardFg); Text("Fat").font(.caption2).foregroundColor(Color.theme.mutedFg) } }
  if let p = d.proteinsG { VStack { Text("\(String(format: "%.1f", p))g").font(.caption.weight(.bold)).foregroundColor(Color.theme.cardFg); Text("Protein").font(.caption2).foregroundColor(Color.theme.mutedFg) } }
  if let dev = d.deviationFromLabelPercent {
  VStack {
  Text("\(String(format: "%.1f", dev))%").font(.caption.weight(.bold)).foregroundColor(abs(dev) <= 20 ? Color.theme.success : Color.theme.error)
- Text("Abw.").font(.caption2).foregroundColor(Color.theme.mutedFg)
+ Text("Dev.").font(.caption2).foregroundColor(Color.theme.mutedFg)
  }
  }
  }
  
  case .packaging(let d):
  HStack(spacing: 12) {
- Label(d.isSealed ? "Dicht" : "Undicht", systemImage: d.isSealed ? "checkmark" : "xmark")
+ Label(d.isSealed ? "Sealed" : "Unsealed", systemImage: d.isSealed ? "checkmark" : "xmark")
  .foregroundColor(d.isSealed ? Color.theme.success : Color.theme.error)
- Label(d.barcodeReadable ? "Barcode OK" : "Barcode Fehler", systemImage: "barcode")
+ Label(d.barcodeReadable ? "Barcode OK" : "Barcode Error", systemImage: "barcode")
  .foregroundColor(d.barcodeReadable ? Color.theme.success : Color.theme.error)
  }
  .font(.caption2)
@@ -817,14 +816,14 @@
  case .visual(let d):
  HStack(spacing: 8) {
  if let grade = d.gradeAssigned { Text(grade).font(.caption2).foregroundColor(Color.theme.cardFg.opacity(0.65)) }
- if let rej = d.rejectionRate { Text("Ausschuss: \(String(format: "%.1f", rej))%").font(.caption2).foregroundColor(rej < 5 ? Color.theme.mutedFg : Color.theme.warning) }
+ if let rej = d.rejectionRate { Text("Rejection: \(String(format: "%.1f", rej))%").font(.caption2).foregroundColor(rej < 5 ? Color.theme.mutedFg : Color.theme.warning) }
  }
  
  case .weight(let d):
  HStack(spacing: 12) {
- VStack { Text("\(String(format: "%.1f", d.targetWeightG))g").font(.caption.weight(.bold)).foregroundColor(Color.theme.cardFg).lineLimit(1); Text("Soll").font(.caption2).foregroundColor(Color.theme.mutedFg) }
- VStack { Text("\(String(format: "%.1f", d.measuredWeightG))g").font(.caption.weight(.bold)).foregroundColor(d.isWithinTolerance ? Color.theme.cardFg : Color.theme.error).lineLimit(1); Text("Ist").font(.caption2).foregroundColor(Color.theme.mutedFg) }
- VStack { Text("±\(String(format: "%.1f", d.tolerancePercent))%").font(.caption.weight(.bold)).foregroundColor(Color.theme.cardFg).lineLimit(1); Text("Toleranz").font(.caption2).foregroundColor(Color.theme.mutedFg) }
+ VStack { Text("\(String(format: "%.1f", d.targetWeightG))g").font(.caption.weight(.bold)).foregroundColor(Color.theme.cardFg).lineLimit(1); Text("Target").font(.caption2).foregroundColor(Color.theme.mutedFg) }
+ VStack { Text("\(String(format: "%.1f", d.measuredWeightG))g").font(.caption.weight(.bold)).foregroundColor(d.isWithinTolerance ? Color.theme.cardFg : Color.theme.error).lineLimit(1); Text("Actual").font(.caption2).foregroundColor(Color.theme.mutedFg) }
+ VStack { Text("±\(String(format: "%.1f", d.tolerancePercent))%").font(.caption.weight(.bold)).foregroundColor(Color.theme.cardFg).lineLimit(1); Text("Tolerance").font(.caption2).foregroundColor(Color.theme.mutedFg) }
  }
  
  case .certification(let d):
@@ -835,12 +834,12 @@
  if let score = d.score { Text("\(Int(score))/100").font(.caption2.weight(.bold)).foregroundColor(score >= 90 ? Color.theme.success : score >= 70 ? Color.theme.warning : Color.theme.error) }
  }
  if !d.nonConformities.isEmpty {
- Text("\(d.nonConformities.count) Abweichungen · \(d.nonConformities.filter { $0.severity == .critical }.count) kritisch")
+ Text("\(d.nonConformities.count) Non-conformities · \(d.nonConformities.filter { $0.severity == .critical }.count) critical")
  .font(.caption2)
  .foregroundColor(d.nonConformities.contains(where: { $0.severity == .critical }) ? Color.theme.error : Color.theme.warning)
  }
  if let valid = d.certificateValidUntil {
- Text("Gültig bis \(valid.formatted(.dateTime.day().month().year()))")
+ Text("Valid until \(valid.formatted(.dateTime.day().month().year()))")
  .font(.caption2).foregroundColor(Color.theme.mutedFg)
  }
  }
@@ -870,11 +869,11 @@
  }
  Spacer()
  VStack(alignment: .trailing, spacing: 2) {
- Text(result.detected ? (result.limitExceeded ? "⚠ Limit!" : "Nachgewiesen") : "n.d.")
+ Text(result.detected ? (result.limitExceeded ? "⚠ Limit!" : "Detected") : "n.d.")
  .font(.caption.weight(.semibold))
  .foregroundColor(result.detected ? (result.limitExceeded ? Color.theme.error : Color.theme.warning) : Color.theme.success)
  if let cfu = result.cfuPerGram, cfu > 0 {
- Text("\(String(format: "%.0f", cfu)) KBE/g")
+ Text("\(String(format: "%.0f", cfu)) CFU/g")
  .font(.caption2)
  .foregroundColor(Color.theme.mutedFg)
  }
@@ -936,7 +935,7 @@
  Text(result.method.rawValue.uppercased())
  .font(.caption2)
  .foregroundColor(Color.theme.mutedFg)
- if result.isEuMajorAllergen { Text("EU-Hauptallergen").font(.caption2).foregroundColor(Color.theme.warning) }
+ if result.isEuMajorAllergen { Text("EU Major Allergen").font(.caption2).foregroundColor(Color.theme.warning) }
  }
  }
  Spacer()
@@ -946,7 +945,7 @@
  .font(.caption.weight(.semibold))
  .foregroundColor(Color.theme.cardFg)
  }
- Text(result.declarationOnLabelCorrect ? "Dekl. korrekt ✓" : "⚠ Deklaration prüfen")
+ Text(result.declarationOnLabelCorrect ? "Decl. correct ✓" : "⚠ Check declaration")
  .font(.caption2)
  .foregroundColor(result.declarationOnLabelCorrect ? Color.theme.success : Color.theme.error)
  }
@@ -1049,7 +1048,7 @@
  .font(.caption)
  .foregroundColor(Color.theme.mutedFg.opacity(0.5))
  .frame(width: 16)
- Text("Standort")
+ Text("Location")
  .font(.subheadline)
  .foregroundColor(Color.theme.cardFg.opacity(0.6))
  Spacer()

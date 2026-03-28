@@ -28,12 +28,12 @@ struct ProductDetailBoxesView: View {
                 // ── 1. Produktionskette ──────────────────────────────────
                 DetailBox(
                     icon: "arrow.triangle.branch",
-                    title: "Produktionskette",
-                    badge: "\(product.stations.count) Stationen",
+                    title: "Supply Chain",
+                    badge: "\(product.stations.count) Stations",
                     badgeColor: stationsColor,
                     subtitle: product.traceabilityScore.completeness >= 0.8
-                        ? "Vollständig rückverfolgbar"
-                        : "\(Int(product.traceabilityScore.completeness * 100))% rückverfolgbar",
+                        ? "Fully traceable"
+                        : "\(Int(product.traceabilityScore.completeness * 100))% traceable",
                     accentColor: Color.theme.success
                 ) { showStations = true }
                 .fullScreenCover(isPresented: $showStations) {
@@ -43,10 +43,10 @@ struct ProductDetailBoxesView: View {
                 // ── 2. Inhaltsstoffe ─────────────────────────────────────
                 DetailBox(
                     icon: "list.bullet.rectangle",
-                    title: "Inhaltsstoffe",
+                    title: "Ingredients",
                     badge: ingredientsBadge,
                     badgeColor: additivesColor,
-                    subtitle: product.ingredientsText != nil ? "Zutaten vorhanden" : "Keine Daten",
+                    subtitle: product.ingredientsText != nil ? "Ingredients available" : "No data",
                     accentColor: Color.theme.infso
                 ) { showIngredients = true }
                 .fullScreenCover(isPresented: $showIngredients) {
@@ -56,7 +56,7 @@ struct ProductDetailBoxesView: View {
                 // ── 3. Meldungen ─────────────────────────────────────────
                 DetailBox(
                     icon: "exclamationmark.bubble.fill",
-                    title: "Meldungen",
+                    title: "Alerts",
                     badge: alertsBadge,
                     badgeColor: alertsColor,
                     subtitle: alertsSubtitle,
@@ -71,9 +71,9 @@ struct ProductDetailBoxesView: View {
                 DetailBox(
                     icon: "info.circle.fill",
                     title: "Details",
-                    badge: "\(product.certifications.filter(\.isCurrentlyValid).count) Zertifikate",
+                    badge: "\(product.certifications.filter(\.isCurrentlyValid).count) Certificates",
                     badgeColor: Color.theme.success,
-                    subtitle: "Herkunft, Verpackung, CO₂",
+                    subtitle: "Origin, Packaging, CO\u{2082}",
                     accentColor: Color.theme.accentFg
                 ) { showInfo = true }
                 .fullScreenCover(isPresented: $showInfo) {
@@ -88,7 +88,7 @@ struct ProductDetailBoxesView: View {
     private var ingredientsBadge: String {
         let n = product.ingredientCount
         let e = product.additivesN ?? 0
-        return n > 0 ? "\(n) Zutaten\(e > 0 ? " · \(e) E-Nr." : "")" : "–"
+        return n > 0 ? "\(n) Ingredients\(e > 0 ? " · \(e) additives" : "")" : "–"
     }
 
     private var additivesColor: Color {
@@ -103,7 +103,7 @@ struct ProductDetailBoxesView: View {
 
     private var alertsBadge: String {
         let active = product.activeAlerts.count
-        return active > 0 ? "\(active) aktiv" : "Keine Warnungen"
+        return active > 0 ? "\(active) active" : "No warnings"
     }
 
     private var alertsColor: Color {
@@ -117,9 +117,9 @@ struct ProductDetailBoxesView: View {
     }
 
     private var alertsSubtitle: String {
-        if product.hasActiveRecall { return "Aktiver Rückruf!" }
+        if product.hasActiveRecall { return "Active Recall!" }
         let n = product.communityAlertCount
-        return n > 0 ? "\(n) Community-Meldung\(n == 1 ? "" : "en")" : "Keine aktiven Warnungen"
+        return n > 0 ? "\(n) community report\(n == 1 ? "" : "s")" : "No active warnings"
     }
 }
 

@@ -174,25 +174,25 @@ extension TomapoCertification {
 
     private static func displayName(for type: CertificationType) -> String {
         switch type {
-        case .euOrganic:          return "EU Bio"
+        case .euOrganic:          return "EU Organic"
         case .demeter:            return "Demeter"
-        case .bioSuisse:          return "Bio Suisse Knospe"
+        case .bioSuisse:          return "Bio Suisse Bud"
         case .naturland:          return "Naturland"
         case .fairtrade:          return "Fairtrade"
         case .rainforestAlliance: return "Rainforest Alliance"
         case .fsc:                return "FSC"
-        case .msc:                return "MSC Nachhaltige Fischerei"
-        case .asc:                return "ASC Aquakultur"
-        case .rspo:               return "RSPO Nachhaltiges Palmöl"
-        case .nonGmo:             return "Ohne Gentechnik"
-        case .glutenFree:         return "Glutenfrei"
+        case .msc:                return "MSC Sustainable Fishing"
+        case .asc:                return "ASC Aquaculture"
+        case .rspo:               return "RSPO Sustainable Palm Oil"
+        case .nonGmo:             return "Non-GMO"
+        case .glutenFree:         return "Gluten Free"
         case .vegan:              return "Vegan"
-        case .vegetarian:         return "Vegetarisch"
+        case .vegetarian:         return "Vegetarian"
         case .halal:              return "Halal"
-        case .kosher:             return "Koscher"
+        case .kosher:             return "Kosher"
         case .ipSuisse:           return "IP-Suisse"
-        case .pdo:                return "g.U. – Geschützte Ursprungsbezeichnung"
-        case .pgi:                return "g.g.A. – Geschützte geogr. Angabe"
+        case .pdo:                return "PDO – Protected Designation of Origin"
+        case .pgi:                return "PGI – Protected Geographical Indication"
         case .aop:                return "AOP"
         case .globalGap:          return "GlobalG.A.P."
         case .haccp:              return "HACCP"
@@ -200,8 +200,8 @@ extension TomapoCertification {
         case .ifs:                return "IFS Food"
         case .brc:                return "BRC Global Standard"
         case .fssc22000:          return "FSSC 22000"
-        case .animalWelfare:      return "Tierwohl-Zertifikat"
-        case .climateNeutral:     return "Klimaneutral"
+        case .animalWelfare:      return "Animal Welfare Certificate"
+        case .climateNeutral:     return "Climate Neutral"
         case .carbonfootprint:    return "Carbon Footprint Certified"
         default:                  return type.rawValue.replacingOccurrences(of: "_", with: " ").capitalized
         }
@@ -209,7 +209,7 @@ extension TomapoCertification {
 
     private static func issuingBody(for type: CertificationType) -> String? {
         switch type {
-        case .euOrganic:          return "Europäische Union"
+        case .euOrganic:          return "European Union"
         case .demeter:            return "Demeter International"
         case .bioSuisse:          return "Bio Suisse"
         case .fairtrade:          return "Fairtrade International"

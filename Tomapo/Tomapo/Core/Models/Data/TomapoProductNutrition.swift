@@ -186,13 +186,13 @@ enum NutriScore: Equatable {
 
     var label: String {
         switch self {
-        case .a: return "Sehr gut"
-        case .b: return "Gut"
-        case .c: return "Mittel"
-        case .d: return "Weniger gut"
-        case .e: return "Schlecht"
-        case .notApplicable: return "Nicht anwendbar"
-        case .unknown: return "Unbekannt"
+        case .a: return "Very Good"
+        case .b: return "Good"
+        case .c: return "Average"
+        case .d: return "Below Average"
+        case .e: return "Poor"
+        case .notApplicable: return "Not Applicable"
+        case .unknown: return "Unknown"
         }
     }
 
@@ -222,11 +222,11 @@ enum NovaGroup: Equatable {
 
     var label: String {
         switch self {
-        case .unprocessed:        return "Unverarbeitete Lebensmittel"
-        case .culinaryIngredient: return "Kulinarische Zutaten"
-        case .processed:          return "Verarbeitete Lebensmittel"
-        case .ultraProcessed:     return "Hochverarbeitet"
-        case .notComputable:      return "Nicht berechenbar"
+        case .unprocessed:        return "Unprocessed Foods"
+        case .culinaryIngredient: return "Culinary Ingredients"
+        case .processed:          return "Processed Foods"
+        case .ultraProcessed:     return "Ultra-Processed"
+        case .notComputable:      return "Not Computable"
         }
     }
 

@@ -170,6 +170,16 @@ final class TomapoUserMessageStore: ObservableObject {
         messages(for: barcode).count
     }
 
+    // MARK: Mock Data Fallback
+
+    /// Seeds the store with mock user messages when backend is unreachable.
+    /// Only populates if the store is currently empty.
+    func seedWithMockData() {
+        guard messages.isEmpty else { return }
+        messages = MockUserMessages.all
+        save()
+    }
+
     // MARK: Persistence
 
     private func save() {

@@ -12,33 +12,33 @@ struct NewsCarousel: View {
     // Platzhalter-Karten mit Theme-Farben
     private let items: [CardItem] = [
         CardItem(
-            title: "Wo kommt dein Essen her?",
-            subtitle: "Scanne einen Barcode und entdecke die Reise deines Produkts",
+            title: "Where does your food come from?",
+            subtitle: "Scan a barcode and discover your product's journey",
             color: Color.theme.chartDustyOlive
         ),
         CardItem(
-            title: "CO₂ Fussabdruck",
-            subtitle: "Sieh auf einen Blick wie klimafreundlich dein Einkauf ist",
+            title: "CO₂ Footprint",
+            subtitle: "See at a glance how climate-friendly your shopping is",
             color: Color.theme.chartSoftMossTeal
         ),
         CardItem(
-            title: "Bio-Zertifikate",
-            subtitle: "Alle Zertifikate und ihre Bedeutung erklärt",
+            title: "Organic Certificates",
+            subtitle: "All certificates and their meaning explained",
             color: Color.theme.accentFg
         ),
         CardItem(
-            title: "Kühlkette prüfen",
-            subtitle: "War dein Fisch immer kalt genug? Tomapo weiss es",
+            title: "Check Cold Chain",
+            subtitle: "Was your fish always cold enough? Tomapo knows",
             color: Color.theme.chartMutedSkyClay
         ),
         CardItem(
-            title: "Laborwerte",
-            subtitle: "Pestizide, Schwermetalle, Allergene – alles auf einen Blick",
+            title: "Lab Results",
+            subtitle: "Pesticides, heavy metals, allergens – all at a glance",
             color: Color.theme.chartWarmSandAmber
         ),
         CardItem(
-            title: "Datenqualität",
-            subtitle: "Wir zeigen dir wenn Produktdaten fehlen oder fehlerhaft sind",
+            title: "Data Quality",
+            subtitle: "We show you when product data is missing or incorrect",
             color: Color.theme.chartTerracottaRose
         ),
     ]

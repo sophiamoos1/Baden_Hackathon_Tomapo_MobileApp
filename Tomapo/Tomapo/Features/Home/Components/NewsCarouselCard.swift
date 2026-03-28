@@ -75,8 +75,8 @@ struct NewsCarouselCard: View {
  
 #Preview {
     NewsCarouselCard(item: CardItem(
-        title: "Neue Funktion",
-        subtitle: "Entdecke die Produktionskette deiner Lebensmittel",
+        title: "New Feature",
+        subtitle: "Discover the supply chain of your food products",
         color: Color.theme.chartDustyOlive
     ))
     .environmentObject(PopupManager())

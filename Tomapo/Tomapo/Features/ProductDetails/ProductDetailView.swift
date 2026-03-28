@@ -47,8 +47,6 @@ struct ProductDetailView: View {
     private func productContent(_ product: TomapoResponse) -> some View {
         ScrollView(showsIndicators: false) {
             VStack(alignment: .leading, spacing: 0) {
-                Color.clear.frame(height: 60)
- 
                 // Hero
                 ProductDetailHero(product: product).padding(.bottom, 8)
  
@@ -99,9 +97,8 @@ struct ProductDetailView: View {
  
     private var loadingView: some View {
         VStack(spacing: 20) {
-            Color.clear.frame(height: 60)
             ProgressView().scaleEffect(1.3).tint(Color.theme.accentFg)
-            Text("Produktdaten werden geladen…")
+            Text("Loading product data…")
                 .font(.subheadline).foregroundColor(Color.theme.mutedFg)
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
@@ -109,23 +106,21 @@ struct ProductDetailView: View {
  
     private var notFoundView: some View {
         VStack(spacing: 16) {
-            Color.clear.frame(height: 60)
             Image(systemName: "magnifyingglass")
                 .font(.system(size: 44)).foregroundColor(Color.theme.mutedFg.opacity(0.35))
-            Text("Produkt nicht gefunden").font(.headline).foregroundColor(Color.theme.cardFg)
+            Text("Product not found").font(.headline).foregroundColor(Color.theme.cardFg)
             Text(entry.barcode).font(.caption).foregroundColor(Color.theme.mutedFg)
         }.frame(maxWidth: .infinity, maxHeight: .infinity)
     }
  
     private func errorView(_ error: TomapoApiError) -> some View {
         VStack(spacing: 12) {
-            Color.clear.frame(height: 60)
             Image(systemName: "wifi.slash").font(.system(size: 40)).foregroundColor(Color.theme.mutedFg.opacity(0.5))
-            Text("Ladefehler").font(.headline).foregroundColor(Color.theme.cardFg)
-            Text(error.localizedDescription ?? "Unbekannter Fehler")
+            Text("Loading Error").font(.headline).foregroundColor(Color.theme.cardFg)
+            Text(error.localizedDescription ?? "Unknown error")
                 .font(.caption).foregroundColor(Color.theme.mutedFg)
                 .multilineTextAlignment(.center).padding(.horizontal)
-            Button("Nochmal versuchen") {
+            Button("Retry") {
                 Task { await vm.load(entry: entry, store: historyStore) }
             }
             .font(.subheadline.weight(.semibold)).foregroundColor(Color.theme.infso)
@@ -144,7 +139,7 @@ final class ProductDetailViewModel {
         state = .loading
         try? await Task.sleep(nanoseconds: 500_000_000)
  
-        // Mock – in Produktion: TomapoService.shared.fetchProduct(barcode:batchId:)
+        // Mock – in production: TomapoService.shared.fetchProduct(barcode:batchId:)
         let barcode = entry.barcode
         let mock = TomapoMockData.trace(for: barcode) ?? TomapoMockData.bioEier()
         state = .loaded(mock)
@@ -185,7 +180,7 @@ private struct ProductDetailHero: View {
                 )
  
             VStack(alignment: .leading, spacing: 5) {
-                Text(product.productName ?? "Unbekanntes Produkt")
+                Text(product.productName ?? "Unknown Product")
                     .font(.title3.weight(.bold))
                     .foregroundColor(Color.theme.cardFg)
                     .lineLimit(2)
@@ -199,7 +194,7 @@ private struct ProductDetailHero: View {
                 HStack(spacing: 4) {
                     Image(systemName: product.traceabilityScore.isThirdPartyVerified ? "checkmark.seal.fill" : "clock.fill")
                         .font(.caption2).foregroundColor(pillColor)
-                    Text("\(Int(product.traceabilityScore.completeness * 100))% rückverfolgbar")
+                    Text("\(Int(product.traceabilityScore.completeness * 100))% traceable")
                         .font(.caption2).foregroundColor(pillColor)
                 }
                 .padding(.horizontal, 8).padding(.vertical, 3)
@@ -230,7 +225,7 @@ private struct ProductDetailHero: View {
 private struct DetailScoreSection: View {
     let product: TomapoResponse
     var body: some View {
-        SheetSection(title: "Bewertungen", icon: "chart.bar.fill") {
+        SheetSection(title: "Scores", icon: "chart.bar.fill") {
             HStack(spacing: 12) {
                 DetailScorePill(label: "Nutri", grade: product.nutriscoreGrade)
                 DetailScorePill(label: "Eco",   grade: product.ecoscoreGrade)
@@ -296,7 +291,7 @@ private struct DetailDataQualityBanner: View {
     var body: some View {
         HStack(spacing: 8) {
             Image(systemName: "exclamationmark.triangle.fill").foregroundColor(Color.theme.warning).font(.caption)
-            Text("Datenfehler erkannt – Nährwertangaben auf Verpackung prüfen.")
+            Text("Data error detected – check nutrition info on packaging.")
                 .font(.caption).foregroundColor(Color.theme.warning)
         }
         .padding(12)
@@ -319,8 +314,8 @@ private struct SubmitAlertPrompt: View {
                 Image(systemName: "exclamationmark.bubble.fill")
                     .font(.system(size: 18)).foregroundColor(Color.theme.accentFg)
                 VStack(alignment: .leading, spacing: 2) {
-                    Text("Meldung erfassen").font(.subheadline.weight(.semibold)).foregroundColor(Color.theme.cardFg)
-                    Text("Problem melden: Schimmel, Fremdkörper, Qualitätsmangel…")
+                    Text("Submit Report").font(.subheadline.weight(.semibold)).foregroundColor(Color.theme.cardFg)
+                    Text("Report an issue: mold, foreign objects, quality defects…")
                         .font(.caption2).foregroundColor(Color.theme.mutedFg)
                 }
                 Spacer()
@@ -333,7 +328,7 @@ private struct SubmitAlertPrompt: View {
             SubmitAlertSheet(product: product) { draft in
                 userMessageStore.add(
                     authorId: userStore.currentUser?.id ?? "guest",
-                    authorNickname: userStore.currentUser?.nickname ?? "Anonym",
+                    authorNickname: userStore.currentUser?.nickname ?? "Anonymous",
                     productSnapshot: TomapoMessageProductSnapshot(
                         barcode: product.barcode, batchId: product.batchId,
                         productName: product.productName, brand: product.brands,

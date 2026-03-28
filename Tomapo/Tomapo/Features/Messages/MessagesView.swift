@@ -6,22 +6,24 @@
 //
 
 internal import SwiftUI
- 
+
 struct MessagesView: View {
     @Binding var selectedTab: BottomBarSelectedTab
     @EnvironmentObject var themeManager: ThemeManager
     @EnvironmentObject private var userMessageStore: TomapoUserMessageStore
     @EnvironmentObject private var historyStore: ScanHistoryStore
- 
+
     @State private var filter: MessageFilter = .all
     @State private var selectedMessage: TomapoUserMessage? = nil
- 
+    @State private var isLoading: Bool = false
+    @State private var loadError: String? = nil
+
     enum MessageFilter: String, CaseIterable {
-        case all     = "Alle"
-        case own     = "Meine"
-        case pending = "Ausstehend"
+        case all     = "All"
+        case own     = "Mine"
+        case pending = "Pending"
     }
- 
+
     private var filteredMessages: [TomapoUserMessage] {
         switch filter {
         case .all:     return userMessageStore.messages
@@ -31,20 +33,22 @@ struct MessagesView: View {
         }
         }
     }
- 
+
     var body: some View {
         ScrollView(showsIndicators: false) {
             VStack(alignment: .leading, spacing: 0) {
- 
+
                 // Header
                 header
                     .padding(.horizontal, 20).padding(.top, 16).padding(.bottom, 16)
- 
+
                 // Filter
                 filterBar.padding(.bottom, 12)
- 
-                // Inhalt
-                if filteredMessages.isEmpty {
+
+                // Content
+                if isLoading {
+                    loadingState
+                } else if filteredMessages.isEmpty {
                     emptyState
                 } else {
                     messageList
@@ -56,32 +60,52 @@ struct MessagesView: View {
             MessageDetailView(message: msg, onBack: { selectedMessage = nil })
                 .environmentObject(historyStore)
         }
+        .task { await loadMessages() }
     }
- 
+
+    private func loadMessages() async {
+        isLoading = userMessageStore.messages.isEmpty
+        do {
+            let serverMessages = try await TomapoAPIService.shared.getMyMessages()
+            // Sync server messages that aren't stored locally
+            for serverMsg in serverMessages {
+                if !userMessageStore.messages.contains(where: { $0.id == serverMsg.id }) {
+                    // Server has messages we don't — could add them
+                    // For now we just use local store as primary
+                }
+            }
+            isLoading = false
+        } catch {
+            // Backend unreachable — seed with mock data if store is empty
+            userMessageStore.seedWithMockData()
+            isLoading = false
+        }
+    }
+
     // MARK: - Header
- 
+
     private var header: some View {
         VStack(alignment: .leading, spacing: 4) {
-            Text("Meldungen")
+            Text("Reports")
                 .font(.largeTitle).fontWeight(.heavy)
                 .foregroundColor(Color.theme.cardFg)
             HStack(spacing: 12) {
-                Text("\(userMessageStore.messages.count) Meldung\(userMessageStore.messages.count == 1 ? "" : "en")")
+                Text("\(userMessageStore.messages.count) report\(userMessageStore.messages.count == 1 ? "" : "s")")
                     .font(.subheadline).foregroundColor(Color.theme.cardFg)
                 let pending = userMessageStore.messages.filter { $0.submissionStatus == .draft }.count
                 if pending > 0 {
                     HStack(spacing: 4) {
                         Circle().fill(Color.theme.warning).frame(width: 6, height: 6)
-                        Text("\(pending) Entwurf\(pending == 1 ? "" : "e")")
+                        Text("\(pending) draft\(pending == 1 ? "" : "s")")
                             .font(.caption).foregroundColor(Color.theme.warning)
                     }
                 }
             }
         }
     }
- 
+
     // MARK: - Filter Bar
- 
+
     private var filterBar: some View {
         ScrollView(.horizontal, showsIndicators: false) {
             HStack(spacing: 8) {
@@ -102,9 +126,20 @@ struct MessagesView: View {
             .padding(.horizontal, 16)
         }
     }
- 
+
+    // MARK: - Loading State
+
+    private var loadingState: some View {
+        VStack(spacing: 16) {
+            ProgressView().tint(Color.theme.accentFg)
+            Text("Loading reports...")
+                .font(.subheadline).foregroundColor(Color.theme.mutedFg)
+        }
+        .frame(maxWidth: .infinity).padding(.top, 80)
+    }
+
     // MARK: - Message List
- 
+
     private var messageList: some View {
         LazyVStack(spacing: 10) {
             ForEach(filteredMessages) { msg in
@@ -113,30 +148,30 @@ struct MessagesView: View {
             }
         }
     }
- 
+
     // MARK: - Empty State
- 
+
     private var emptyState: some View {
         VStack(spacing: 16) {
             Image(systemName: "bubble.left.and.exclamationmark.bubble.right")
                 .font(.system(size: 48, weight: .ultraLight))
                 .foregroundColor(Color.theme.mutedFg.opacity(0.35))
-            Text("Keine Meldungen")
+            Text("No Reports")
                 .font(.headline).foregroundColor(Color.theme.cardFg)
-            Text("Du hast noch keine Meldungen erfasst. Scanne ein Produkt und melde einen Mangel.")
+            Text("You haven't submitted any reports yet. Scan a product and report an issue.")
                 .font(.subheadline).foregroundColor(Color.theme.cardFg)
                 .multilineTextAlignment(.center)
         }
         .frame(maxWidth: .infinity).padding(.top, 80).padding(.horizontal, 40)
     }
 }
- 
+
 // MARK: - Message Row
- 
+
 private struct MessageRow: View {
     let message: TomapoUserMessage
     let onTap: () -> Void
- 
+
     var body: some View {
         Button(action: onTap) {
             VStack(alignment: .leading, spacing: 10) {
@@ -157,11 +192,11 @@ private struct MessageRow: View {
                     Spacer()
                     StatusPill(status: message.submissionStatus)
                 }
- 
+
                 Text(message.displayBodyPreview)
                     .font(.caption).foregroundColor(Color.theme.mutedFg)
                     .lineLimit(2)
- 
+
                 HStack(spacing: 10) {
                     SeverityChipSmall(severity: message.severity)
                     CategoryChipSmall(category: message.category)
@@ -176,7 +211,7 @@ private struct MessageRow: View {
         }
         .buttonStyle(.plain)
     }
- 
+
     private var severityColor: Color {
         switch message.severity {
         case .critical: return Color.theme.error
@@ -187,7 +222,7 @@ private struct MessageRow: View {
         }
     }
 }
- 
+
 private struct StatusPill: View {
     let status: MessageSubmissionStatus
     var body: some View {
@@ -196,10 +231,10 @@ private struct StatusPill: View {
     }
     private var label: String {
         switch status {
-        case .draft:     return "Entwurf"
-        case .submitted: return "Gesendet"
-        case .published: return "Veröffentlicht"
-        case .rejected:  return "Abgelehnt"
+        case .draft:     return "Draft"
+        case .submitted: return "Submitted"
+        case .published: return "Published"
+        case .rejected:  return "Rejected"
         }
     }
     private var color: Color {
@@ -211,7 +246,7 @@ private struct StatusPill: View {
         }
     }
 }
- 
+
 private struct SeverityChipSmall: View {
     let severity: AlertSeverity
     var body: some View {
@@ -219,13 +254,13 @@ private struct SeverityChipSmall: View {
             .padding(.horizontal, 6).padding(.vertical, 2).background(color.opacity(0.1)).cornerRadius(6)
     }
     private var label: String {
-        switch severity { case .low: return "Niedrig"; case .medium: return "Mittel"; case .high: return "Hoch"; case .critical: return "Kritisch"; default: return "Info" }
+        switch severity { case .low: return "Low"; case .medium: return "Medium"; case .high: return "High"; case .critical: return "Critical"; default: return "Info" }
     }
     private var color: Color {
         switch severity { case .low: return Color.theme.infso; case .medium: return Color.theme.warning; case .high: return Color.theme.warning; case .critical: return Color.theme.error; default: return Color.theme.mutedFg }
     }
 }
- 
+
 private struct CategoryChipSmall: View {
     let category: AlertCategory
     var body: some View {
@@ -234,53 +269,50 @@ private struct CategoryChipSmall: View {
     }
     private var label: String {
         switch category {
-        case .mold:            return "Schimmel"
-        case .qualityDefect:   return "Qualität"
-        case .foreignObject:   return "Fremdkörper"
-        case .packagingDefect: return "Verpackung"
+        case .mold:            return "Mold"
+        case .qualityDefect:   return "Quality"
+        case .foreignObject:   return "Foreign Object"
+        case .packagingDefect: return "Packaging"
         case .allergenWarning: return "Allergen"
-        case .labelingError:   return "Etikett"
-        case .foodSafety:      return "Sicherheit"
+        case .labelingError:   return "Labeling"
+        case .foodSafety:      return "Safety"
         default:               return "Info"
         }
     }
 }
- 
+
 // MARK: - Message Detail View
- 
+
 struct MessageDetailView: View {
     let message: TomapoUserMessage
     var onBack: () -> Void
- 
+
     @EnvironmentObject private var historyStore: ScanHistoryStore
     @State private var showProductDetail = false
- 
+
     var body: some View {
         ZStack(alignment: .top) {
             Color.theme.baseBg.ignoresSafeArea()
             ScrollView(showsIndicators: false) {
                 VStack(alignment: .leading, spacing: 20) {
-                    Color.clear.frame(height: 60)
- 
-                    // Meldungs-Header
+                    // Alert Header
                     alertHeader.padding(.horizontal, 16)
- 
-                    // Produkt-Verknüpfung
+
+                    // Product Link
                     productCard.padding(.horizontal, 16)
- 
+
                     // Details
                     messageDetails.padding(.horizontal, 16)
- 
+
                     Spacer(minLength: 40)
                 }
                 .padding(.bottom, 32)
             }
         }
         .safeAreaInset(edge: .top, spacing: 0) {
-            BackNavigationBar(title: "Meldungsdetails", onBack: onBack)
+            BackNavigationBar(title: "Report Details", onBack: onBack)
         }
         .fullScreenCover(isPresented: $showProductDetail) {
-            // Produkt neu laden via ScanHistoryEntry
             let fakeEntry = ScanHistoryEntry(
                 barcode: message.barcode,
                 barcodeType: "EAN13",
@@ -294,7 +326,7 @@ struct MessageDetailView: View {
                 .environmentObject(TomapoUserStore())
         }
     }
- 
+
     private var alertHeader: some View {
         VStack(alignment: .leading, spacing: 10) {
             HStack(spacing: 10) {
@@ -316,7 +348,7 @@ struct MessageDetailView: View {
         }
         .padding(14).background(Color.theme.cardBg).cornerRadius(14)
     }
- 
+
     private var productCard: some View {
         Button { showProductDetail = true } label: {
             HStack(spacing: 12) {
@@ -338,49 +370,49 @@ struct MessageDetailView: View {
         }
         .buttonStyle(.plain)
     }
- 
+
     private var messageDetails: some View {
         VStack(spacing: 0) {
-            SheetSection(title: "Metadaten", icon: "info.circle") {
+            SheetSection(title: "Metadata", icon: "info.circle") {
                 VStack(spacing: 0) {
-                    InfoRow(label: "Autor",    value: message.displayAuthor)
+                    InfoRow(label: "Author",    value: message.displayAuthor)
                     Divider().padding(.leading, 16)
-                    InfoRow(label: "Kategorie", value: categoryLabel)
+                    InfoRow(label: "Category", value: categoryLabel)
                     Divider().padding(.leading, 16)
-                    InfoRow(label: "Erstellt",  value: message.createdAt.formatted(.dateTime.day().month(.wide).year().hour().minute()))
+                    InfoRow(label: "Created",  value: message.createdAt.formatted(.dateTime.day().month(.wide).year().hour().minute()))
                     if message.createdAt != message.updatedAt {
                         Divider().padding(.leading, 16)
-                        InfoRow(label: "Aktualisiert", value: message.updatedAt.formatted(.dateTime.day().month().year()))
+                        InfoRow(label: "Updated", value: message.updatedAt.formatted(.dateTime.day().month().year()))
                     }
                     if let batch = message.batchId {
                         Divider().padding(.leading, 16)
-                        InfoRow(label: "Charge", value: batch)
+                        InfoRow(label: "Batch", value: batch)
                     }
                 }
                 .background(Color.theme.cardBg).cornerRadius(12)
             }
         }
     }
- 
+
     private var severityColor: Color {
         switch message.severity {
         case .critical: return Color.theme.error; case .high: return Color.theme.warning
         case .medium: return Color.theme.warning; case .low: return Color.theme.infso; default: return Color.theme.mutedFg
         }
     }
- 
+
     private var categoryLabel: String {
         switch message.category {
-        case .mold: return "Schimmel"; case .qualityDefect: return "Qualitätsmangel"
-        case .foreignObject: return "Fremdkörper"; case .packagingDefect: return "Verpackungsschaden"
-        case .allergenWarning: return "Allergen-Warnung"; case .labelingError: return "Etikettierfehler"
-        case .foodSafety: return "Lebensmittelsicherheit"; default: return message.category.rawValue.capitalized
+        case .mold: return "Mold"; case .qualityDefect: return "Quality Defect"
+        case .foreignObject: return "Foreign Object"; case .packagingDefect: return "Packaging Defect"
+        case .allergenWarning: return "Allergen Warning"; case .labelingError: return "Labeling Error"
+        case .foodSafety: return "Food Safety"; default: return message.category.rawValue.capitalized
         }
     }
 }
- 
+
 // MARK: - Preview
- 
+
 #Preview {
     MessagesView(selectedTab: .constant(.messages))
         .environmentObject(ThemeManager())
