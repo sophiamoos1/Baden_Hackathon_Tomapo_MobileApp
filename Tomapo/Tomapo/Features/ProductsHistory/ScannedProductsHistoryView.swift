@@ -7,23 +7,24 @@
 
 internal import SwiftUI
 internal import Charts
- 
+
 struct ScannedProductsHistoryView: View {
     @Binding var selectedTab: BottomBarSelectedTab
     @EnvironmentObject private var themeManager: ThemeManager
     @EnvironmentObject private var historyStore: ScanHistoryStore
     @EnvironmentObject private var userMessageStore: TomapoUserMessageStore
     @EnvironmentObject private var userStore: TomapoUserStore
- 
+
     @State private var selectedEntry: ScanHistoryEntry? = nil
     @State private var chartRange: ChartRange = .week
- 
+    @State private var isSyncing: Bool = false
+
     enum ChartRange: String, CaseIterable {
-        case week  = "7 Tage"
-        case month = "30 Tage"
-        case all   = "Alle"
+        case week  = "7 Days"
+        case month = "30 Days"
+        case all   = "All"
     }
- 
+
     private var fromDate: Date {
         let cal = Calendar.current
         switch chartRange {
@@ -32,33 +33,33 @@ struct ScannedProductsHistoryView: View {
         case .all:   return Date.distantPast
         }
     }
- 
+
     private var filteredEntries: [ScanHistoryEntry] {
         historyStore.entries.filter { $0.scannedAt >= fromDate }
     }
- 
+
     private var co2Total: Double {
         historyStore.co2InRange(from: fromDate)
     }
- 
+
     var body: some View {
         ScrollView(showsIndicators: false) {
             VStack(alignment: .leading, spacing: 0) {
- 
+
                 // MARK: Header
                 header
                     .padding(.horizontal, 20)
                     .padding(.top, 16)
                     .padding(.bottom, 12)
- 
+
                 // MARK: Recall Warning
                 if !historyStore.recallEntries.isEmpty {
                     RecallWarningBanner(count: historyStore.recallEntries.count)
                         .padding(.horizontal, 16)
                         .padding(.bottom, 12)
                 }
- 
-                // MARK: CO₂ Diagramm
+
+                // MARK: CO2 Chart
                 if !historyStore.entries.isEmpty {
                     CO2Section(
                         entries: historyStore.entries,
@@ -69,8 +70,8 @@ struct ScannedProductsHistoryView: View {
                     .padding(.horizontal, 16)
                     .padding(.bottom, 20)
                 }
- 
-                // MARK: Produktliste
+
+                // MARK: Product List
                 if historyStore.entries.isEmpty {
                     emptyState
                 } else {
@@ -85,33 +86,64 @@ struct ScannedProductsHistoryView: View {
                 .environmentObject(userMessageStore)
                 .environmentObject(userStore)
         }
+        .task { await syncWithServer() }
     }
- 
+
+    private func syncWithServer() async {
+        isSyncing = true
+        defer { isSyncing = false }
+        do {
+            let serverEntries = try await TomapoAPIService.shared.getMyScanHistory()
+            // Add server entries not found locally
+            for serverEntry in serverEntries {
+                let existsLocally = historyStore.entries.contains { $0.barcode == serverEntry.barcode }
+                if !existsLocally {
+                    historyStore.add(
+                        barcode: serverEntry.barcode,
+                        barcodeType: serverEntry.barcodeType ?? "EAN13",
+                        productName: serverEntry.productName,
+                        brand: serverEntry.brand,
+                        nutriscoreGrade: serverEntry.nutriscoreGrade,
+                        ecoscoreGrade: serverEntry.ecoscoreGrade,
+                        co2KgPerKg: serverEntry.co2KgPerKg
+                    )
+                }
+            }
+        } catch {
+            // Silent — local store is the fallback
+        }
+    }
+
     // MARK: - Header
- 
+
     private var header: some View {
         HStack(alignment: .firstTextBaseline) {
             VStack(alignment: .leading, spacing: 4) {
                 Text("History")
                     .font(.largeTitle).fontWeight(.heavy)
                     .foregroundColor(Color.theme.cardFg)
-                Text("\(historyStore.entries.count) gescannte Produkte")
-                    .font(.subheadline).foregroundColor(Color.theme.cardFg)
+                HStack(spacing: 6) {
+                    Text("\(historyStore.entries.count) scanned products")
+                        .font(.subheadline).foregroundColor(Color.theme.cardFg)
+                    if isSyncing {
+                        ProgressView().scaleEffect(0.6)
+                    }
+                }
             }
             Spacer()
             if !historyStore.entries.isEmpty {
                 Button {
                     withAnimation { historyStore.clearAll() }
                 } label: {
-                    Text("Alles löschen")
+                    Text("Clear All")
                         .font(.caption).foregroundColor(Color.theme.mutedFg)
                 }
             }
         }
     }
- 
+
     // MARK: - Product List
- 
+
     private var productList: some View {
         LazyVStack(spacing: 10) {
             ForEach(historyStore.entries) { entry in
@@ -123,23 +155,23 @@ struct ScannedProductsHistoryView: View {
                     Button(role: .destructive) {
                         withAnimation { historyStore.remove(entry) }
                     } label: {
-                        Label("Löschen", systemImage: "trash")
+                        Label("Delete", systemImage: "trash")
                     }
                 }
             }
         }
     }
- 
+
     // MARK: - Empty State
- 
+
     private var emptyState: some View {
         VStack(spacing: 16) {
             Image("IllustrationScan")
                 .resizable().scaledToFit()
                 .frame(width: 140, height: 140)
-            Text("Noch nichts gescannt")
+            Text("Nothing scanned yet")
                 .font(.headline).foregroundColor(Color.theme.cardFg)
-            Text("Scanne ein Produkt um es hier zu sehen.")
+            Text("Scan a product to see it here.")
                 .font(.subheadline).foregroundColor(Color.theme.cardFg)
                 .multilineTextAlignment(.center)
         }
@@ -147,9 +179,9 @@ struct ScannedProductsHistoryView: View {
         .padding(.top, 80).padding(.horizontal, 40)
     }
 }
- 
+
 // MARK: - Recall Warning Banner
- 
+
 private struct RecallWarningBanner: View {
     let count: Int
     var body: some View {
@@ -157,9 +189,9 @@ private struct RecallWarningBanner: View {
             Image(systemName: "exclamationmark.triangle.fill")
                 .foregroundColor(Color.theme.error)
             VStack(alignment: .leading, spacing: 2) {
-                Text("\(count) Produkt\(count == 1 ? "" : "e") mit aktivem Rückruf")
+                Text("\(count) product\(count == 1 ? "" : "s") with active recall")
                     .font(.caption.weight(.bold)).foregroundColor(Color.theme.error)
-                Text("Bitte die betroffenen Produkte nicht verwenden.")
+                Text("Please do not consume the affected products.")
                     .font(.caption2).foregroundColor(Color.theme.mutedFg)
             }
             Spacer()
@@ -170,16 +202,16 @@ private struct RecallWarningBanner: View {
         .cornerRadius(12)
     }
 }
- 
-// MARK: - CO₂ Section
- 
+
+// MARK: - CO2 Section
+
 private struct CO2Section: View {
     let entries: [ScanHistoryEntry]
     let filteredEntries: [ScanHistoryEntry]
     let co2Total: Double
     @Binding var range: ScannedProductsHistoryView.ChartRange
- 
-    // Aggregierte Tages-Daten für das Diagramm
+
+    // Aggregated daily data for chart
     private var chartData: [(Date, Double)] {
         let cal = Calendar.current
         var dict: [Date: Double] = [:]
@@ -190,18 +222,18 @@ private struct CO2Section: View {
         }
         return dict.sorted { $0.key < $1.key }
     }
- 
+
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
             HStack {
                 VStack(alignment: .leading, spacing: 2) {
-                    Text("CO₂ Fussabdruck").font(.subheadline.weight(.semibold)).foregroundColor(Color.theme.cardFg)
-                    Text(String(format: "%.2f kg CO₂eq", co2Total))
+                    Text("CO\u{2082} Footprint").font(.subheadline.weight(.semibold)).foregroundColor(Color.theme.cardFg)
+                    Text(String(format: "%.2f kg CO\u{2082}eq", co2Total))
                         .font(.title3.weight(.bold)).foregroundColor(co2Color)
                 }
                 Spacer()
                 // Range Picker
-                Picker("Zeitraum", selection: $range) {
+                Picker("Period", selection: $range) {
                     ForEach(ScannedProductsHistoryView.ChartRange.allCases, id: \.self) {
                         Text($0.rawValue).tag($0)
                     }
@@ -209,25 +241,25 @@ private struct CO2Section: View {
                 .pickerStyle(.segmented)
                 .frame(width: 180)
             }
- 
+
             if chartData.isEmpty {
-                Text("Keine CO₂-Daten für diesen Zeitraum")
+                Text("No CO\u{2082} data for this period")
                     .font(.caption).foregroundColor(Color.theme.mutedFg)
                     .padding(.vertical, 20).frame(maxWidth: .infinity, alignment: .center)
             } else {
-                // Balkendiagramm
+                // Bar Chart
                 Chart {
                     ForEach(chartData, id: \.0) { day, co2 in
                         BarMark(
-                            x: .value("Datum", day, unit: .day),
-                            y: .value("CO₂ kg", co2)
+                            x: .value("Date", day, unit: .day),
+                            y: .value("CO\u{2082} kg", co2)
                         )
                         .foregroundStyle(Color.theme.chartSoftMossTeal.gradient)
                         .cornerRadius(4)
                     }
                 }
                 .chartXAxis {
-                    AxisMarks(values: .stride(by: .day, count: range == .week ? 1 : 7)) { value in
+                    AxisMarks(values: .stride(by: .day, count: range == .week ? 1 : 7)) { _ in
                         AxisValueLabel(format: range == .week ? .dateTime.weekday(.abbreviated) : .dateTime.day().month(.abbreviated))
                             .foregroundStyle(Color.theme.mutedFg)
                     }
@@ -244,26 +276,26 @@ private struct CO2Section: View {
                 }
                 .frame(height: 130)
             }
- 
+
             // Stats
             HStack(spacing: 20) {
                 StatItem(label: "Scans", value: "\(filteredEntries.count)")
                 if let avg = chartData.isEmpty ? nil : co2Total / Double(max(filteredEntries.filter { $0.co2KgPerKg != nil }.count, 1)) {
-                    StatItem(label: "Ø/Produkt", value: String(format: "%.2f kg", avg))
+                    StatItem(label: "Avg/Product", value: String(format: "%.2f kg", avg))
                 }
-                StatItem(label: "Zeitraum", value: range.rawValue)
+                StatItem(label: "Period", value: range.rawValue)
             }
         }
         .padding(16)
         .background(Color.theme.cardBg)
         .cornerRadius(16)
     }
- 
+
     private var co2Color: Color {
         co2Total < 5 ? Color.theme.success : co2Total < 15 ? Color.theme.warning : Color.theme.error
     }
 }
- 
+
 private struct StatItem: View {
     let label: String; let value: String
     var body: some View {
@@ -273,29 +305,3 @@ private struct StatItem: View {
         }
     }
 }
- /*
-// MARK: - Preview
- 
-#Preview {
-    let store = ScanHistoryStore()
-    store.add(barcode: "4316268651288", barcodeType: "EAN13", batchId: "DE-031107-26046",
-              productName: "BioBio Bio-Eier Freilandhaltung", brand: "BioBio",
-              imageUrl: nil, nutriscoreGrade: "a", ecoscoreGrade: "b",
-              co2KgPerKg: 3.167, bestBeforeDate: nil, hasActiveRecall: false)
-    store.add(barcode: "5000159461122", barcodeType: "EAN13", batchId: nil,
-              productName: "Snickers", brand: "Mars",
-              imageUrl: nil, nutriscoreGrade: "e", ecoscoreGrade: "d",
-              co2KgPerKg: 5.2, bestBeforeDate: nil, hasActiveRecall: true)
-    return ZStack {
-        GeometryReader { geo in
-            Image("TomapBackground").resizable().scaledToFill()
-                .frame(width: geo.size.width, height: geo.size.height).clipped()
-        }.ignoresSafeArea()
-        ScannedProductsHistoryView(selectedTab: .constant(.history))
-            .environmentObject(ThemeManager())
-            .environmentObject(store)
-            .environmentObject(TomapoUserMessageStore())
-            .environmentObject(TomapoUserStore())
-    }
-}
-*/

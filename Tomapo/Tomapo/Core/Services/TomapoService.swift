@@ -43,11 +43,11 @@ enum TomapoApiError: LocalizedError {
 
     var errorDescription: String? {
         switch self {
-        case .invalidBarcode:       return "Ungültiger Barcode"
-        case .networkError(let e):  return "Netzwerkfehler: \(e.localizedDescription)"
-        case .decodingError(let e): return "Datenfehler: \(e.localizedDescription)"
-        case .serverError(let c):   return "Server-Fehler \(c)"
-        case .timeout:              return "Zeitüberschreitung"
+        case .invalidBarcode:       return "Invalid barcode"
+        case .networkError(let e):  return "Network error: \(e.localizedDescription)"
+        case .decodingError(let e): return "Data error: \(e.localizedDescription)"
+        case .serverError(let c):   return "Server error \(c)"
+        case .timeout:              return "Request timed out"
         }
     }
 }
@@ -59,7 +59,7 @@ final class TomapoService {
     static let shared = TomapoService()
     private init() {}
 
-    private let baseURL = "https://api.wheresmytomato.app/v1"
+    private let baseURL = "http://localhost:3000/api/v1/"
 
     private var decoder: JSONDecoder {
         let d = JSONDecoder()

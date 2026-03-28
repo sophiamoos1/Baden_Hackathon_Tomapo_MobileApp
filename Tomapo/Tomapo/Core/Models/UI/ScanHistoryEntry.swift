@@ -33,9 +33,9 @@ enum ProductStatus: String, Codable, Equatable {
 
     var displayLabel: String {
         switch self {
-        case .recallActive:    return "Rückruf aktiv"
-        case .mhdExpired:      return "MHD abgelaufen"
-        case .mhdSoonExpiring: return "MHD läuft ab"
+        case .recallActive:    return "Recall Active"
+        case .mhdExpired:      return "Best Before Expired"
+        case .mhdSoonExpiring: return "Expiring Soon"
         case .ok, .unknown:    return ""
         }
     }

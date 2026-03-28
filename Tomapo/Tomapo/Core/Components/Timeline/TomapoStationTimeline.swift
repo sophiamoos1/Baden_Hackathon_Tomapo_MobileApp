@@ -17,7 +17,7 @@ struct TomapoStationTimeline: View {
         VStack(alignment: .leading, spacing: 14) {
             // Section header
             HStack(spacing: 8) {
-                Text("Productionchain")
+                Text("Supply Chain")
                     .font(.system(size: 15, weight: .semibold))
                     .foregroundColor(Color.theme.cardFg)
                 Spacer()
@@ -224,11 +224,11 @@ private struct StationTimelineRow: View {
     // MARK: Helpers
 
     private func formatDuration(_ hours: Double) -> String {
-        if hours < 1 { return "\(Int(hours * 60)) Min." }
-        if hours < 24 { return "\(Int(hours)) Std." }
+        if hours < 1 { return "\(Int(hours * 60)) min" }
+        if hours < 24 { return "\(Int(hours)) hrs" }
         let days = Int(hours / 24)
         let rem = Int(hours.truncatingRemainder(dividingBy: 24))
-        return rem > 0 ? "\(days)d \(rem)h" : "\(days) Tage"
+        return rem > 0 ? "\(days)d \(rem)h" : "\(days) days"
     }
 
     private func countryName(_ code: String) -> String {
@@ -253,13 +253,13 @@ private struct StationStatusBadge: View {
 
     private var statusLabel: String {
         switch status {
-        case .completed:  return "Abgeschlossen"
-        case .warning:    return "Warnung"
-        case .failed:     return "Fehlgeschlagen"
-        case .active:     return "Aktiv"
-        case .pending:    return "Ausstehend"
-        case .skipped:    return "Übersprungen"
-        case .unknown:    return "Unbekannt"
+        case .completed:  return "Completed"
+        case .warning:    return "Warning"
+        case .failed:     return "Failed"
+        case .active:     return "Active"
+        case .pending:    return "Pending"
+        case .skipped:    return "Skipped"
+        case .unknown:    return "Unknown"
         }
     }
 

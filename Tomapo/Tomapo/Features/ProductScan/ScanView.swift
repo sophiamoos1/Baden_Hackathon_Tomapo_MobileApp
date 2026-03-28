@@ -118,7 +118,7 @@ struct ScanView: View {
     // MARK: - Step 1: Hint Text
 
     private var step1HintText: some View {
-        Text("QR-Code oder Barcode in den Rahmen halten")
+        Text("Point QR code or barcode at the frame")
             .font(.system(size: 11))
             .foregroundColor(.white.opacity(0.65))
             .multilineTextAlignment(.center)
@@ -135,13 +135,13 @@ struct ScanView: View {
         }
 
         // Hint text
-        Text("Batch ID (L-Nummer) auf der Verpackung scannen")
+        Text("Scan the Batch ID (L-number) on the packaging")
             .font(.system(size: 11))
             .foregroundColor(.white.opacity(0.65))
             .multilineTextAlignment(.center)
 
         // Fallback label
-        Text("Nicht gefunden? Manuell eingeben:")
+        Text("Not found? Enter manually:")
             .font(.system(size: 10))
             .foregroundColor(Color.theme.mutedFg)
 
@@ -171,7 +171,7 @@ struct ScanView: View {
                 }
                 viewModel.confirmBatchID()
             } label: {
-                Text("Bestätigen")
+                Text("Confirm")
                     .font(.system(size: 12, weight: .medium))
                     .foregroundColor(Color.theme.baseFg)
                     .padding(.horizontal, 14)
@@ -189,7 +189,7 @@ struct ScanView: View {
         Button {
             viewModel.skipBatchID()
         } label: {
-            Text("Überspringen")
+            Text("Skip")
                 .font(.system(size: 11))
                 .foregroundColor(Color.theme.mutedFg)
                 .overlay(
@@ -235,17 +235,17 @@ struct CameraPermissionDeniedView: View {
                 .font(.system(size: 48))
                 .foregroundColor(Color.theme.baseFg)
 
-            Text("Kamerazugriff verweigert")
+            Text("Camera Access Denied")
                 .font(.headline)
                 .foregroundColor(Color.theme.baseFg)
 
-            Text("Bitte erlaube den Kamerazugriff in den Einstellungen um QR-Codes scannen zu können.")
+            Text("Please allow camera access in Settings to scan QR codes and barcodes.")
                 .font(.subheadline)
                 .foregroundColor(Color.theme.baseFg.opacity(0.7))
                 .multilineTextAlignment(.center)
                 .padding(.horizontal, 32)
 
-            Button("Einstellungen öffnen") {
+            Button("Open Settings") {
                 if let url = URL(string: UIApplication.openSettingsURLString) {
                     UIApplication.shared.open(url)
                 }

@@ -41,8 +41,8 @@ struct SubmitAlertSheet: View {
                     productPreview.padding(.horizontal, 16).padding(.top, 16)
 
                     // Title
-                    formField(label: "Titel *", hint: "Kurze Beschreibung des Problems") {
-                        TextField("z.B. Schimmel auf der Verpackung entdeckt", text: $draft.title)
+                    formField(label: "Title *", hint: "Short description of the issue") {
+                        TextField("e.g. Mold found on packaging", text: $draft.title)
                             .textFieldStyle(.plain)
                             .font(.subheadline)
                             .foregroundColor(Color.theme.cardFg)
@@ -53,7 +53,7 @@ struct SubmitAlertSheet: View {
                     .padding(.horizontal, 16)
 
                     // Category
-                    formField(label: "Kategorie *", hint: nil) {
+                    formField(label: "Category *", hint: nil) {
                         ScrollView(.horizontal, showsIndicators: false) {
                             HStack(spacing: 8) {
                                 ForEach(selectableCategories, id: \.self) { cat in
@@ -68,7 +68,7 @@ struct SubmitAlertSheet: View {
                     .padding(.leading, 16)
 
                     // Severity
-                    formField(label: "Schweregrad *", hint: nil) {
+                    formField(label: "Severity *", hint: nil) {
                         HStack(spacing: 8) {
                             ForEach(selectableSeverities, id: \.self) { sev in
                                 SeverityChip(severity: sev, isSelected: draft.severity == sev) {
@@ -82,10 +82,10 @@ struct SubmitAlertSheet: View {
                     .padding(.leading, 16)
 
                     // Body
-                    formField(label: "Beschreibung *", hint: "Beschreibe den Mangel so genau wie möglich. Wann gekauft, wo, was genau ist aufgefallen?") {
+                    formField(label: "Description *", hint: "Describe the issue in as much detail as possible. When purchased, where, and what exactly was noticed?") {
                         ZStack(alignment: .topLeading) {
                             if draft.body.isEmpty {
-                                Text("z.B. Schimmelflecken auf 3 von 10 Eiern, obwohl MHD noch 5 Tage entfernt. Gekauft am 15.02 bei Netto Basel.")
+                                Text("e.g. Mold spots on 3 out of 10 eggs, even though best-before date is still 5 days away. Purchased on Feb 15 at Netto Basel.")
                                     .font(.subheadline)
                                     .foregroundColor(Color.theme.mutedFg)
                                     .padding(12)
@@ -106,13 +106,13 @@ struct SubmitAlertSheet: View {
                     if showValidationError {
                         HStack(spacing: 8) {
                             Image(systemName: "exclamationmark.triangle.fill").foregroundColor(Color.theme.error).font(.caption)
-                            Text("Bitte Titel und Beschreibung ausfüllen.").font(.caption).foregroundColor(Color.theme.error)
+                            Text("Please fill in title and description.").font(.caption).foregroundColor(Color.theme.error)
                         }
                         .padding(.horizontal, 16)
                     }
 
                     // Disclaimer
-                    Text("Deine Meldung wird geprüft und kann danach für andere User sichtbar werden. Dein Nickname wird angezeigt.")
+                    Text("Your report will be reviewed and may become visible to other users. Your nickname will be displayed.")
                         .font(.caption2).foregroundColor(Color.theme.mutedFg)
                         .padding(.horizontal, 16)
 
@@ -120,11 +120,11 @@ struct SubmitAlertSheet: View {
                 }
             }
             .background(Color.theme.baseBg)
-            .navigationTitle("Meldung erfassen")
+            .navigationTitle("Submit Report")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .topBarLeading) {
-                    Button("Abbrechen") { dismiss() }
+                    Button("Cancel") { dismiss() }
                         .foregroundColor(Color.theme.mutedFg)
                 }
                 ToolbarItem(placement: .topBarTrailing) {
@@ -136,7 +136,7 @@ struct SubmitAlertSheet: View {
                         }
                         onSubmit(draft)
                     } label: {
-                        Text("Einreichen")
+                        Text("Submit")
                             .font(.subheadline.weight(.semibold))
                             .foregroundColor(Color.theme.accentFg)
                     }
@@ -158,7 +158,7 @@ struct SubmitAlertSheet: View {
             VStack(alignment: .leading, spacing: 2) {
                 Text(product.productName ?? product.barcode).font(.subheadline.weight(.semibold)).foregroundColor(Color.theme.cardFg).lineLimit(1)
                 if let brand = product.brands { Text(brand).font(.caption).foregroundColor(Color.theme.mutedFg) }
-                if let batch = product.batchId { Text("Charge: \(batch)").font(.caption2).foregroundColor(Color.theme.mutedFg) }
+                if let batch = product.batchId { Text("Batch: \(batch)").font(.caption2).foregroundColor(Color.theme.mutedFg) }
             }
             Spacer()
         }
@@ -183,14 +183,14 @@ private struct CategoryChip: View {
 
     private var label: String {
         switch category {
-        case .mold:            return "Schimmel"
-        case .qualityDefect:   return "Qualitätsmangel"
-        case .foreignObject:   return "Fremdkörper"
-        case .packagingDefect: return "Verpackungsschaden"
+        case .mold:            return "Mold"
+        case .qualityDefect:   return "Quality Defect"
+        case .foreignObject:   return "Foreign Object"
+        case .packagingDefect: return "Packaging Defect"
         case .allergenWarning: return "Allergen"
-        case .labelingError:   return "Etikettierfehler"
-        case .foodSafety:      return "Lebensmittelsicherheit"
-        case .generalInfo:     return "Allgemeine Info"
+        case .labelingError:   return "Labeling Error"
+        case .foodSafety:      return "Food Safety"
+        case .generalInfo:     return "General Info"
         default:               return category.rawValue.replacingOccurrences(of: "_", with: " ").capitalized
         }
     }
@@ -214,8 +214,8 @@ private struct SeverityChip: View {
 
     private var label: String {
         switch severity {
-        case .low: return "Niedrig"; case .medium: return "Mittel"
-        case .high: return "Hoch"; case .critical: return "Kritisch"; default: return "Info"
+        case .low: return "Low"; case .medium: return "Medium"
+        case .high: return "High"; case .critical: return "Critical"; default: return "Info"
         }
     }
     private var color: Color {

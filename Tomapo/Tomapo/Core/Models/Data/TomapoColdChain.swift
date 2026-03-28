@@ -65,7 +65,7 @@ struct TomapoColdChainSummary: Codable {
             highestTemperatureCelsius: nil, hadColdChainBreak: false,
             coldChainBreakCount: 0, totalBreakDurationMinutes: nil,
             totalRefrigeratedTransportHours: nil,
-            summaryText: "Keine Kühlung erforderlich")
+            summaryText: "No refrigeration required")
     }
 }
 

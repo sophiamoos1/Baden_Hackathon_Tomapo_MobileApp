@@ -41,7 +41,7 @@ struct NutritionCardView: View {
         VStack(alignment: .leading, spacing: 0) {
             // Section header
             HStack {
-                Text("Nährwerte")
+                Text("Nutrition")
                     .font(.system(size: 15, weight: .medium))
                     .foregroundColor(Color.theme.cardFg)
                 Spacer()
@@ -71,9 +71,9 @@ struct NutritionCardView: View {
                 .frame(width: 120, height: 120)
 
                 VStack(alignment: .leading, spacing: 11) {
-                    MacroLegendRow(color: carbsColor, name: "Kohlenhydrate", value: carbs)
-                    MacroLegendRow(color: proteinColor, name: "Proteine", value: protein)
-                    MacroLegendRow(color: fatColor, name: "Fett", value: fat)
+                    MacroLegendRow(color: carbsColor, name: "Carbohydrates", value: carbs)
+                    MacroLegendRow(color: proteinColor, name: "Protein", value: protein)
+                    MacroLegendRow(color: fatColor, name: "Fat", value: fat)
                 }
             }
             .padding(.horizontal, 20)
@@ -88,14 +88,14 @@ struct NutritionCardView: View {
 
             // Nutrient bars
             VStack(spacing: 13) {
-                NutrientBar(name: "Kohlenhydrate", value: carbs, ref: refCarbs, color: carbsColor)
-                NutrientBar(name: "davon Zucker", value: sugars, ref: refSugars, color: carbsColor, isSub: true)
-                NutrientBar(name: "Proteine", value: protein, ref: refProtein, color: proteinColor)
-                NutrientBar(name: "Fett", value: fat, ref: refFat, color: fatColor)
-                NutrientBar(name: "davon gesättigt", value: saturatedFat, ref: refSaturatedFat, color: fatColor, isSub: true)
-                NutrientBar(name: "Salz", value: salt, ref: refSalt, color: saltColor)
+                NutrientBar(name: "Carbohydrates", value: carbs, ref: refCarbs, color: carbsColor)
+                NutrientBar(name: "of which sugars", value: sugars, ref: refSugars, color: carbsColor, isSub: true)
+                NutrientBar(name: "Protein", value: protein, ref: refProtein, color: proteinColor)
+                NutrientBar(name: "Fat", value: fat, ref: refFat, color: fatColor)
+                NutrientBar(name: "of which saturated", value: saturatedFat, ref: refSaturatedFat, color: fatColor, isSub: true)
+                NutrientBar(name: "Salt", value: salt, ref: refSalt, color: saltColor)
                 if fiber > 0 {
-                    NutrientBar(name: "Ballaststoffe", value: fiber, ref: refFiber, color: Color.theme.mutedFg)
+                    NutrientBar(name: "Fiber", value: fiber, ref: refFiber, color: Color.theme.mutedFg)
                 }
             }
             .padding(.horizontal, 20)
@@ -103,7 +103,7 @@ struct NutritionCardView: View {
             .padding(.bottom, 8)
 
             // Reference note
-            Text("Referenzwerte basierend auf einer täglichen Zufuhr von 2000 kcal für einen durchschnittlichen Erwachsenen")
+            Text("Reference values based on a daily intake of 2,000 kcal for an average adult")
                 .font(.system(size: 10))
                 .foregroundColor(Color.theme.mutedFg)
                 .multilineTextAlignment(.center)
@@ -114,7 +114,7 @@ struct NutritionCardView: View {
 
             // Serving size (optional)
             if let serving = servingSize {
-                Text("Portionsgrösse: \(serving)")
+                Text("Serving size: \(serving)")
                     .font(.system(size: 10))
                     .foregroundColor(Color.theme.mutedFg)
                     .frame(maxWidth: .infinity, alignment: .center)

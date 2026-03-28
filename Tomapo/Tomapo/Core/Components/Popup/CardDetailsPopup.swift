@@ -108,8 +108,8 @@ struct CardDetailsPopup: View {
  
         CardDetailsPopup(
             item: CardItem(
-                title: "Wo kommt dein Essen her?",
-                subtitle: "Scanne einen Barcode und entdecke die vollständige Reise deines Produkts – vom Feld bis in deinen Einkaufskorb.",
+                title: "Where does your food come from?",
+                subtitle: "Scan a barcode and discover the complete journey of your product – from the field to your shopping basket.",
                 color: Color.theme.chartDustyOlive
             ),
             onClose: {}

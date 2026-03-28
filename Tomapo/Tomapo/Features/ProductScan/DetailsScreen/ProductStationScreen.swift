@@ -47,14 +47,14 @@ struct ProductStationsScreen: View {
             }
         }
         .safeAreaInset(edge: .top, spacing: 0) {
-            BackNavigationBar(title: "Produktionskette", onBack: onBack)
+            BackNavigationBar(title: "Supply Chain", onBack: onBack)
         }
     }
  
     private var emptyState: some View {
         VStack(spacing: 12) {
             Image(systemName: "arrow.triangle.branch").font(.system(size: 40)).foregroundColor(Color.theme.mutedFg.opacity(0.25))
-            Text("Keine Stationsdaten verfügbar").font(.subheadline).foregroundColor(Color.theme.mutedFg)
+            Text("No station data available").font(.subheadline).foregroundColor(Color.theme.mutedFg)
         }
         .frame(maxWidth: .infinity).padding(.top, 60)
     }
@@ -77,19 +77,19 @@ private struct TraceabilityScoreCard: View {
                         .font(.system(size: 12, weight: .bold)).foregroundColor(Color.theme.cardFg)
                 }
                 VStack(alignment: .leading, spacing: 4) {
-                    Text("Rückverfolgbarkeit").font(.subheadline.weight(.semibold)).foregroundColor(Color.theme.cardFg)
+                    Text("Traceability").font(.subheadline.weight(.semibold)).foregroundColor(Color.theme.cardFg)
                     HStack(spacing: 10) {
                         if score.verifiedStations > 0 {
-                            Label("\(score.verifiedStations) verifiziert", systemImage: "checkmark.seal.fill")
+                            Label("\(score.verifiedStations) verified", systemImage: "checkmark.seal.fill")
                                 .font(.caption2).foregroundColor(Color.theme.success)
                         }
                         if score.unknownStations > 0 {
-                            Label("\(score.unknownStations) unbekannt", systemImage: "questionmark.circle")
+                            Label("\(score.unknownStations) unknown", systemImage: "questionmark.circle")
                                 .font(.caption2).foregroundColor(Color.theme.mutedFg)
                         }
                     }
                     if score.hasGaps {
-                        Text("⚠ Lücken in der Rückverfolgbarkeit").font(.caption2).foregroundColor(Color.theme.warning)
+                        Text("⚠ Gaps in traceability").font(.caption2).foregroundColor(Color.theme.warning)
                     }
                 }
                 Spacer()

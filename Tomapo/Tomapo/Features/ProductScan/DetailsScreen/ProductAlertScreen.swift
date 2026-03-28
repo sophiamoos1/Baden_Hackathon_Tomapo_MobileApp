@@ -17,11 +17,11 @@ struct ProductAlertsScreen: View {
     @State private var filter: AlertFilter = .all
 
     enum AlertFilter: String, CaseIterable {
-        case all        = "Alle"
-        case recalls    = "Rückrufe"
+        case all        = "All"
+        case recalls    = "Recalls"
         case community  = "Community"
-        case official   = "Offiziell"
-        case own        = "Meine"
+        case official   = "Official"
+        case own        = "My Reports"
     }
 
     private var filteredAlerts: [TomapoProductAlert] {
@@ -53,7 +53,7 @@ struct ProductAlertsScreen: View {
                             if filteredAlerts.isEmpty {
                                 VStack(spacing: 8) {
                                     Image(systemName: "line.3.horizontal.decrease").font(.system(size: 32)).foregroundColor(Color.theme.mutedFg.opacity(0.25))
-                                    Text("Keine Meldungen in dieser Kategorie").font(.subheadline).foregroundColor(Color.theme.mutedFg)
+                                    Text("No alerts in this category").font(.subheadline).foregroundColor(Color.theme.mutedFg)
                                 }
                                 .frame(maxWidth: .infinity).padding(.top, 40)
                             } else {
@@ -70,7 +70,7 @@ struct ProductAlertsScreen: View {
 
             // BackBar + Filter (fixiert oben)
             VStack(spacing: 0) {
-                BackNavigationBar(title: "Meldungen", onBack: onBack)
+                BackNavigationBar(title: "Alerts", onBack: onBack)
                 filterBar
             }
         }
@@ -78,7 +78,7 @@ struct ProductAlertsScreen: View {
             SubmitAlertSheet(product: product, onSubmit: { message in
                 userMessageStore.add(
                     authorId: userStore.currentUser?.id ?? "guest",
-                    authorNickname: userStore.currentUser?.nickname ?? "Anonym",
+                    authorNickname: userStore.currentUser?.nickname ?? "Anonymous",
                     productSnapshot: TomapoMessageProductSnapshot(
                         barcode: product.barcode, batchId: product.batchId,
                         productName: product.productName, brand: product.brands,
@@ -129,7 +129,7 @@ struct ProductAlertsScreen: View {
         } label: {
             HStack(spacing: 10) {
                 Image(systemName: "plus.circle.fill").font(.system(size: 20)).foregroundColor(Color.theme.accentFg)
-                Text("Neue Meldung erfassen").font(.subheadline.weight(.semibold)).foregroundColor(Color.theme.cardFg)
+                Text("Submit New Alert").font(.subheadline.weight(.semibold)).foregroundColor(Color.theme.cardFg)
                 Spacer()
                 Image(systemName: "chevron.right").font(.caption2).foregroundColor(Color.theme.mutedFg.opacity(0.35))
             }
@@ -141,8 +141,8 @@ struct ProductAlertsScreen: View {
     private var emptyState: some View {
         VStack(spacing: 12) {
             Image(systemName: "checkmark.seal.fill").font(.system(size: 40)).foregroundColor(Color.theme.success.opacity(0.6))
-            Text("Keine Meldungen").font(.subheadline.weight(.semibold)).foregroundColor(Color.theme.cardFg)
-            Text("Für dieses Produkt liegen keine Meldungen vor.").font(.caption).foregroundColor(Color.theme.mutedFg).multilineTextAlignment(.center)
+            Text("No Alerts").font(.subheadline.weight(.semibold)).foregroundColor(Color.theme.cardFg)
+            Text("No alerts have been reported for this product.").font(.caption).foregroundColor(Color.theme.mutedFg).multilineTextAlignment(.center)
         }
         .frame(maxWidth: .infinity).padding(.top, 60).padding(.horizontal, 40)
     }
@@ -237,8 +237,8 @@ private struct SeverityBadge: View {
     }
     private var label: String {
         switch severity {
-        case .critical: return "Kritisch"; case .high: return "Hoch"
-        case .medium: return "Mittel"; case .low: return "Niedrig"; case .info: return "Info"
+        case .critical: return "Critical"; case .high: return "High"
+        case .medium: return "Medium"; case .low: return "Low"; case .info: return "Info"
         }
     }
     private var color: Color {
@@ -257,8 +257,8 @@ private struct SourceBadge: View {
     }
     private var label: String {
         switch source {
-        case .ownUser: return "Meine Meldung"; case .official: return "Hersteller"
-        case .government: return "Behörde"; case .user: return "Community"
+        case .ownUser: return "My Report"; case .official: return "Manufacturer"
+        case .government: return "Authority"; case .user: return "Community"
         case .community: return "Community"; case .system: return "System"
         }
     }

@@ -6,9 +6,9 @@
 //
 
 internal import SwiftUI
- 
-// MARK: - Haupt-Sheet
- 
+
+// MARK: - Main Sheet
+
 struct ScanResultSheetView: View {
     let result: ScanResult
     var batchID: String? = nil
@@ -16,7 +16,7 @@ struct ScanResultSheetView: View {
     @StateObject private var vm = ScanResultViewModel()
     @EnvironmentObject private var historyStore: ScanHistoryStore
     @EnvironmentObject private var userMessageStore: TomapoUserMessageStore
- 
+
     var body: some View {
         NavigationStack {
             ZStack { Color.theme.baseBg.ignoresSafeArea(); content }
@@ -33,98 +33,293 @@ struct ScanResultSheetView: View {
                     }
                 }
                 ToolbarItem(placement: .principal) {
-                    Text("Produkt erkannt")
+                    Text("Product Detected")
                         .font(.headline).foregroundColor(Color.theme.cardFg)
                 }
             }
         }
         .task { await vm.loadProduct(barcode: result.value, barcodeType: result.type, batchId: batchID, store: historyStore) }
     }
- 
+
     @ViewBuilder
     private var content: some View {
         switch vm.state {
         case .idle, .loading: loadingView
         case .notFound:        notFoundView
         case .error(let e):    errorView(e)
-        case .loaded(let p):   ProductSheetContent(product: p, barcode: result.value, batchID: batchID)
+        case .loaded(let p):   ProductSheetContent(product: p, barcode: result.value, batchID: batchID, vm: vm)
         }
     }
- 
+
     private var loadingView: some View {
         VStack(spacing: 20) {
-            ProgressView().scaleEffect(1.2).tint(Color.theme.cardFg)
-            Text("Produkt wird geladen…").font(.subheadline).foregroundColor(Color.theme.mutedFg)
-        }.frame(maxWidth: .infinity, maxHeight: .infinity)
+            // Barcode as title
+            Text(result.value)
+                .font(.system(size: 14, weight: .medium, design: .monospaced))
+                .foregroundColor(Color.theme.mutedFg)
+
+            // Pulsing indicator
+            ZStack {
+                Circle()
+                    .fill(Color.theme.accentFg.opacity(0.1))
+                    .frame(width: 72, height: 72)
+                Image(systemName: "barcode.viewfinder")
+                    .font(.system(size: 32))
+                    .foregroundColor(Color.theme.accentFg)
+                    .symbolEffect(.pulse, isActive: true)
+            }
+
+            Text(vm.loadingMessage)
+                .font(.subheadline)
+                .foregroundColor(Color.theme.mutedFg)
+                .animation(.easeInOut, value: vm.loadingMessage)
+
+            ProgressView()
+                .scaleEffect(0.9)
+                .tint(Color.theme.accentFg)
+        }
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
     }
- 
+
     private var notFoundView: some View {
         VStack(spacing: 16) {
-            Image(systemName: "magnifyingglass").font(.system(size: 44)).foregroundColor(Color.theme.mutedFg.opacity(0.35))
-            Text("Produkt nicht gefunden").font(.headline).foregroundColor(Color.theme.cardFg)
-            Text(result.value).font(.caption).foregroundColor(Color.theme.mutedFg)
-        }.frame(maxWidth: .infinity, maxHeight: .infinity)
+            Image(systemName: "magnifyingglass")
+                .font(.system(size: 52, weight: .ultraLight))
+                .foregroundColor(Color.theme.mutedFg.opacity(0.35))
+
+            Text("Product Not Found")
+                .font(.headline).foregroundColor(Color.theme.cardFg)
+
+            Text("No product data available for this barcode.")
+                .font(.subheadline).foregroundColor(Color.theme.mutedFg)
+                .multilineTextAlignment(.center)
+                .padding(.horizontal, 40)
+
+            Text(result.value)
+                .font(.system(size: 13, design: .monospaced))
+                .foregroundColor(Color.theme.mutedFg)
+                .padding(.horizontal, 14).padding(.vertical, 6)
+                .background(Color.theme.mutedBg)
+                .cornerRadius(8)
+        }
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
     }
- 
+
     private func errorView(_ error: TomapoApiError) -> some View {
-        VStack(spacing: 12) {
-            Image(systemName: "wifi.slash").font(.system(size: 40)).foregroundColor(Color.theme.mutedFg.opacity(0.5))
-            Text("Ladefehler").font(.headline).foregroundColor(Color.theme.cardFg)
+        VStack(spacing: 16) {
+            Image(systemName: "wifi.slash")
+                .font(.system(size: 48, weight: .ultraLight))
+                .foregroundColor(Color.theme.mutedFg.opacity(0.5))
+
+            Text("Loading Error")
+                .font(.headline).foregroundColor(Color.theme.cardFg)
+
             Text(error.localizedDescription)
-                .font(.caption).foregroundColor(Color.theme.mutedFg)
-                .multilineTextAlignment(.center).padding(.horizontal)
-        }.frame(maxWidth: .infinity, maxHeight: .infinity)
+                .font(.subheadline).foregroundColor(Color.theme.mutedFg)
+                .multilineTextAlignment(.center).padding(.horizontal, 40)
+
+            Button {
+                Task { await vm.loadProduct(barcode: result.value, barcodeType: result.type, batchId: batchID, store: historyStore) }
+            } label: {
+                Label("Try Again", systemImage: "arrow.clockwise")
+                    .font(.subheadline.weight(.medium))
+                    .foregroundColor(.white)
+                    .padding(.horizontal, 20).padding(.vertical, 10)
+                    .background(Color.theme.accentFg)
+                    .cornerRadius(20)
+            }
+        }
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
     }
 }
- 
+
 // MARK: - Sheet Content
- 
+
 private struct ProductSheetContent: View {
     let product: TomapoResponse
     var barcode: String? = nil
     var batchID: String? = nil
- 
+    @ObservedObject var vm: ScanResultViewModel
+
     var body: some View {
         ScrollView(showsIndicators: false) {
             VStack(alignment: .leading, spacing: 0) {
                 ProductHeroHeader(product: product, barcode: barcode, batchID: batchID).padding(.bottom, 8)
- 
-                // Rückruf-Banner
+
+                // Recall Banner
                 if let recall = product.officialRecalls.first {
                     RecallBanner(alert: recall).padding(.horizontal, 16).padding(.bottom, 12)
                 }
- 
-                // Datenfehler-Banner
+
+                // Data Quality Banner
                 if product.hasDataErrors {
                     DataQualityBanner(errors: product.dataQualityErrorsTags ?? [])
                         .padding(.horizontal, 16).padding(.bottom, 12)
                 }
- 
+
                 VStack(alignment: .leading, spacing: 20) {
                     ScoreTripletSection(product: product)
                     if let n = product.nutriments, product.hasReliableNutritionData {
                         NutritionCardView(nutriments: n, servingSize: product.servingSize)
                     }
-                    // Kühlkette
+                    // Cold Chain
                     if product.requiresColdChain {
                         ColdChainCardView(summary: product.coldChainSummary, stations: product.stations)
                     }
-                    // 4 Boxen
+                    // 4 Boxes
                     ProductDetailBoxesView(product: product)
+
+                    // AI Chat Section
+                    AIInsightSection(vm: vm)
                 }
                 .padding(.horizontal, 16).padding(.bottom, 48)
             }
         }
+        .scrollDismissesKeyboard(.interactively)
     }
 }
- 
+
+// MARK: - AI Insight Section
+
+private struct AIInsightSection: View {
+    @ObservedObject var vm: ScanResultViewModel
+    @State private var inputText: String = ""
+    @FocusState private var isInputFocused: Bool
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            // Expandable header
+            Button {
+                withAnimation(.easeInOut(duration: 0.22)) {
+                    vm.isChatExpanded.toggle()
+                }
+            } label: {
+                HStack(spacing: 8) {
+                    Image(systemName: "sparkles")
+                        .font(.system(size: 14))
+                        .foregroundColor(Color.theme.accentFg)
+                    Text("Ask Tomapo AI")
+                        .font(.subheadline.weight(.semibold))
+                        .foregroundColor(Color.theme.cardFg)
+                    Spacer()
+                    Image(systemName: vm.isChatExpanded ? "chevron.up" : "chevron.down")
+                        .font(.caption2.weight(.bold))
+                        .foregroundColor(Color.theme.mutedFg)
+                }
+                .padding(14)
+                .background(Color.theme.cardBg)
+                .cornerRadius(14)
+            }
+            .buttonStyle(.plain)
+
+            if vm.isChatExpanded {
+                VStack(alignment: .leading, spacing: 10) {
+                    // Chat history
+                    ForEach(Array(vm.chatMessages.enumerated()), id: \.offset) { _, msg in
+                        ChatBubble(message: msg)
+                    }
+
+                    // Streaming response
+                    if vm.isChatStreaming && !vm.chatResponse.isEmpty {
+                        HStack(alignment: .top, spacing: 8) {
+                            Image(systemName: "sparkles")
+                                .font(.caption2)
+                                .foregroundColor(Color.theme.accentFg)
+                                .padding(.top, 3)
+                            Text(vm.chatResponse)
+                                .font(.subheadline)
+                                .foregroundColor(Color.theme.cardFg)
+                                .fixedSize(horizontal: false, vertical: true)
+                        }
+                        .padding(12)
+                        .background(Color.theme.cardBg)
+                        .cornerRadius(12)
+                    }
+
+                    // Streaming indicator
+                    if vm.isChatStreaming && vm.chatResponse.isEmpty {
+                        HStack(spacing: 8) {
+                            ProgressView().scaleEffect(0.8).tint(Color.theme.accentFg)
+                            Text("Thinking...")
+                                .font(.caption).foregroundColor(Color.theme.mutedFg)
+                        }
+                        .padding(12)
+                    }
+
+                    // Error
+                    if let error = vm.chatError {
+                        Text(error)
+                            .font(.caption).foregroundColor(Color.theme.error)
+                            .padding(10)
+                            .background(Color.theme.error.opacity(0.08))
+                            .cornerRadius(8)
+                    }
+
+                    // Input
+                    HStack(spacing: 8) {
+                        TextField("Ask a question...", text: $inputText)
+                            .font(.subheadline)
+                            .foregroundColor(Color.theme.cardFg)
+                            .focused($isInputFocused)
+                            .textFieldStyle(.plain)
+                            .padding(.horizontal, 12)
+                            .padding(.vertical, 10)
+                            .background(Color.theme.mutedBg)
+                            .cornerRadius(10)
+
+                        Button {
+                            let text = inputText
+                            inputText = ""
+                            vm.sendChatMessage(text)
+                        } label: {
+                            Image(systemName: "arrow.up.circle.fill")
+                                .font(.system(size: 28))
+                                .foregroundColor(
+                                    inputText.trimmingCharacters(in: .whitespaces).isEmpty || vm.isChatStreaming
+                                    ? Color.theme.mutedFg.opacity(0.3)
+                                    : Color.theme.accentFg
+                                )
+                        }
+                        .disabled(inputText.trimmingCharacters(in: .whitespaces).isEmpty || vm.isChatStreaming)
+                    }
+                }
+                .transition(.opacity.combined(with: .move(edge: .top)))
+            }
+        }
+    }
+}
+
+private struct ChatBubble: View {
+    let message: ChatMessage
+
+    var body: some View {
+        HStack(alignment: .top, spacing: 8) {
+            if message.role == "assistant" {
+                Image(systemName: "sparkles")
+                    .font(.caption2)
+                    .foregroundColor(Color.theme.accentFg)
+                    .padding(.top, 3)
+            }
+            Text(message.content)
+                .font(.subheadline)
+                .foregroundColor(message.role == "user" ? .white : Color.theme.cardFg)
+                .fixedSize(horizontal: false, vertical: true)
+            if message.role == "user" { Spacer(minLength: 40) }
+        }
+        .padding(12)
+        .background(message.role == "user" ? Color.theme.accentFg : Color.theme.cardBg)
+        .cornerRadius(12)
+        .frame(maxWidth: .infinity, alignment: message.role == "user" ? .trailing : .leading)
+    }
+}
+
 // MARK: - Hero Header
- 
+
 private struct ProductHeroHeader: View {
     let product: TomapoResponse
     var barcode: String? = nil
     var batchID: String? = nil
- 
+
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
             HStack(alignment: .top, spacing: 14) {
@@ -137,7 +332,7 @@ private struct ProductHeroHeader: View {
                             .foregroundColor(Color.theme.mutedFg.opacity(0.35))
                     )
                 VStack(alignment: .leading, spacing: 5) {
-                    Text(product.productName ?? "Unbekanntes Produkt")
+                    Text(product.productName ?? "Unknown Product")
                         .font(.title3).fontWeight(.bold)
                         .foregroundColor(Color.theme.cardFg).lineLimit(2)
                     if let brands = product.brands {
@@ -184,7 +379,7 @@ private struct ProductHeroHeader: View {
             }
         }
     }
- 
+
     private var productIcon: String {
         let cats = product.categoriesTags ?? []
         if cats.contains(where: { $0.contains("water") })                           { return "drop.fill" }
@@ -196,12 +391,12 @@ private struct ProductHeroHeader: View {
         return "cart.fill"
     }
 }
- 
-// MARK: - Recall Banner (nutzt TomapoProductAlert direkt)
- 
+
+// MARK: - Recall Banner
+
 private struct RecallBanner: View {
     let alert: TomapoProductAlert
- 
+
     private var bannerColor: Color {
         switch alert.severity {
         case .critical: return Color.theme.error
@@ -209,13 +404,13 @@ private struct RecallBanner: View {
         default:        return Color.theme.infso
         }
     }
- 
+
     var body: some View {
         VStack(alignment: .leading, spacing: 8) {
             HStack(spacing: 8) {
                 Image(systemName: alert.severity == .critical ? "exclamationmark.triangle.fill" : "exclamationmark.circle.fill")
                     .foregroundColor(bannerColor)
-                Text(alert.severity == .critical ? "RÜCKRUF" : "Warnung")
+                Text(alert.severity == .critical ? "RECALL" : "Warning")
                     .font(.caption).fontWeight(.bold).foregroundColor(bannerColor)
                 Spacer()
                 Text(alert.displayAuthor).font(.caption2).foregroundColor(bannerColor.opacity(0.7))
@@ -232,27 +427,27 @@ private struct RecallBanner: View {
         .cornerRadius(12)
     }
 }
- 
+
 // MARK: - Data Quality Banner
- 
+
 private struct DataQualityBanner: View {
     let errors: [String]
- 
+
     private func label(for tag: String) -> String {
-        if tag.contains("salt")     { return "⚠ Salzwert unplausibel (>100g/100g)" }
-        if tag.contains("energy")   { return "⚠ Energiewert stimmt nicht mit Makros überein" }
-        if tag.contains("over-105") { return "⚠ Nährwertsumme > 105g/100g" }
+        if tag.contains("salt")     { return "⚠ Suspicious salt value (>100g/100g)" }
+        if tag.contains("energy")   { return "⚠ Energy value doesn't match macros" }
+        if tag.contains("over-105") { return "⚠ Nutrient sum > 105g/100g" }
         return "⚠ \(tag.replacingOccurrences(of: "en:", with: ""))"
     }
- 
+
     var body: some View {
         VStack(alignment: .leading, spacing: 6) {
             HStack(spacing: 6) {
                 Image(systemName: "exclamationmark.triangle.fill").foregroundColor(Color.theme.warning).font(.caption)
-                Text("Datenfehler erkannt").font(.caption).fontWeight(.semibold).foregroundColor(Color.theme.warning)
+                Text("Data Errors Detected").font(.caption).fontWeight(.semibold).foregroundColor(Color.theme.warning)
             }
             ForEach(errors, id: \.self) { Text(label(for: $0)).font(.caption2).foregroundColor(Color.theme.mutedFg) }
-            Text("Nährwertangaben auf Verpackung prüfen.").font(.caption2).foregroundColor(Color.theme.mutedFg)
+            Text("Please verify nutrition info on packaging.").font(.caption2).foregroundColor(Color.theme.mutedFg)
         }
         .padding(12)
         .background(Color.theme.warning.opacity(0.07))
@@ -260,14 +455,14 @@ private struct DataQualityBanner: View {
         .cornerRadius(12)
     }
 }
- 
+
 // MARK: - Score Triplet
- 
+
 private struct ScoreTripletSection: View {
     let product: TomapoResponse
- 
+
     var body: some View {
-        SheetSection(title: "Bewertungen", icon: "chart.bar.fill") {
+        SheetSection(title: "Ratings", icon: "chart.bar.fill") {
             HStack(spacing: 12) {
                 ScorePill(label: "Nutri", grade: product.nutriscoreGrade, style: .nutri)
                 ScorePill(label: "Eco",   grade: product.ecoscoreGrade,   style: .eco)
@@ -277,20 +472,20 @@ private struct ScoreTripletSection: View {
             if let nova = product.novaGroup, product.nova.isKnown {
                 Text("NOVA \(nova) – \(product.nova.label)").font(.caption).foregroundColor(Color.theme.mutedFg)
             } else if product.novaGroupError == "missing_ingredients" {
-                Text("NOVA nicht berechenbar – Zutaten fehlen").font(.caption).foregroundColor(Color.theme.mutedFg)
+                Text("NOVA not calculable – ingredients missing").font(.caption).foregroundColor(Color.theme.mutedFg)
             }
             if product.ecoscoreGrade == "not-applicable" {
-                Text("Eco-Score gilt nicht für diese Kategorie").font(.caption).foregroundColor(Color.theme.mutedFg)
+                Text("Eco-Score not applicable for this category").font(.caption).foregroundColor(Color.theme.mutedFg)
             }
         }
     }
 }
- 
+
 private struct ScorePill: View {
     let label: String; let grade: String?
     enum ScoreStyle { case nutri, eco, nova }
     let style: ScoreStyle
- 
+
     private var displayGrade: String { grade?.uppercased() ?? "?" }
     private var bgColor: Color {
         switch grade?.lowercased() {
@@ -316,7 +511,7 @@ private struct ScorePill: View {
         if g == "unknown" || g == "not-applicable" || g == nil { return Color.theme.mutedFg }
         return .white
     }
- 
+
     var body: some View {
         VStack(spacing: 4) {
             ZStack {
@@ -329,18 +524,17 @@ private struct ScorePill: View {
         }
     }
 }
- 
 
- 
+
 // MARK: - Traceability Pill
- 
+
 private struct TraceabilityPill: View {
     let score: TomapoTraceabilityScore
     var body: some View {
         HStack(spacing: 4) {
             Image(systemName: score.isThirdPartyVerified ? "checkmark.seal.fill" : "clock.fill")
                 .font(.caption2).foregroundColor(pillColor)
-            Text("\(Int(score.completeness * 100))% rückverfolgbar")
+            Text("\(Int(score.completeness * 100))% traceable")
                 .font(.caption2).foregroundColor(pillColor)
         }
         .padding(.horizontal, 8).padding(.vertical, 3)
@@ -350,13 +544,13 @@ private struct TraceabilityPill: View {
         score.completeness >= 0.8 ? Color.theme.success : score.completeness >= 0.5 ? Color.theme.warning : Color.theme.error
     }
 }
- 
-// MARK: - Shared Components (öffentlich für andere Views)
- 
+
+// MARK: - Shared Components
+
 struct SheetSection<Content: View>: View {
     let title: String; let icon: String
     @ViewBuilder let content: () -> Content
- 
+
     var body: some View {
         VStack(alignment: .leading, spacing: 10) {
             HStack(spacing: 6) {
@@ -368,7 +562,7 @@ struct SheetSection<Content: View>: View {
         }
     }
 }
- 
+
 struct InfoRow: View {
     let label: String; let value: String
     var valueColor: Color = Color.theme.cardFg
@@ -385,14 +579,14 @@ struct InfoRow: View {
         .padding(.horizontal, 16).padding(.vertical, 11)
     }
 }
- 
+
 struct PlaceholderRow: View {
     let text: String
     var body: some View {
         Text(text).font(.caption).foregroundColor(Color.theme.mutedFg.opacity(0.5)).padding(.vertical, 4)
     }
 }
- 
+
 struct FlexTagCloud: View {
     let tags: [String]; let color: Color
     var body: some View {
@@ -405,7 +599,7 @@ struct FlexTagCloud: View {
         }
     }
 }
- 
+
 struct FlexLayout: Layout {
     var spacing: CGFloat = 6
     func sizeThatFits(proposal: ProposedViewSize, subviews: Subviews, cache: inout ()) -> CGSize {
@@ -428,19 +622,19 @@ struct FlexLayout: Layout {
         }
     }
 }
- 
-// MARK: - DietBadge (nutzt DietStatus statt OFFDietStatus)
- 
+
+// MARK: - DietBadge
+
 struct DietBadge: View {
     let label: String; let status: DietStatus
- 
+
     private var color: Color {
         switch status { case .yes: return Color.theme.success; case .no: return Color.theme.error; case .maybe: return Color.theme.warning; case .unknown: return Color.theme.mutedFg.opacity(0.4) }
     }
     private var icon: String {
         switch status { case .yes: return "checkmark"; case .no: return "xmark"; case .maybe: return "questionmark"; case .unknown: return "minus" }
     }
- 
+
     var body: some View {
         HStack(spacing: 4) {
             Image(systemName: icon).font(.system(size: 9, weight: .bold))
@@ -450,9 +644,9 @@ struct DietBadge: View {
         .background(color.opacity(0.12)).cornerRadius(20)
     }
 }
- 
+
 // MARK: - Preview
- 
+
 #Preview {
     ScanResultSheetView(result: ScanResult(value: "4316268651288", type: "EAN13"))
         .environmentObject(ScanHistoryStore())
